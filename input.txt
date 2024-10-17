@@ -1,0 +1,22 @@
+# Satisfiable with only one correct answer
+a ^ -b
+(a v b) ^ (-a v -b)
+(e v f) ^ (g v -e) ^ (-g ^ -f)
+
+# Satisfiable with multiple answers
+(c ^ d) v (c ^ -d)
+(a v -b) ^ (b v -c) ^ (-a v c)
+(a v b) ^ (-b v c)
+
+# Unsatisfiable formulas
+a ^ -a
+(c v -c) ^ (-c v c)
+(a v b) ^ (-a v b) ^ (-b)
+(c ^ -c) v (d ^ -d)
+
+# More satisfiable examples
+(b v c) ^ (-b v d) ^ (-d)
+(a v -b) ^ (c v d) ^ (-a v c)
+(b ^ c) v (-d v b)
+(a v -c) ^ (-a v b) ^ (b v c)
+(-f v g) ^ (f v -h) ^ (-g v h)
