@@ -151,6 +151,7 @@ public class DPLLSolver {
 
                 // Output the result
                 if (isSatisfiable) {
+                    assignment.entrySet().removeIf(entry -> entry.getKey() == null);
                     System.out.println("Satisfiable with assignment: " + assignment);
                 } else {
                     System.out.println("Unsatisfiable");
