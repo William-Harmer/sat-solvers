@@ -2,185 +2,164 @@ import java.io.*;
 import java.util.*;
 
 public class DPLLSolver {
-    private static Map<Character, Boolean> literalValues; // Stores the literal values (true/false)
-    private static List<List<Character>> clauses; // List of clauses in the formula
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("input.txt")); // Open file for reading
+    // Method to parse the CNF formula from a file
+    public static List<String> parseCNFFile(String filename) throws IOException {
+        List<String> formulas = new ArrayList<>();
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
-
-        while ((line = reader.readLine()) != null) { // Read each line of the file
-            line = line.trim(); // Remove any whitespace
-            if (line.isEmpty() || line.startsWith("#")) { // Skip empty or comment lines
-                continue;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim(); // Trim whitespace
+            // Ignore comment lines and empty lines
+            if (!line.isEmpty() && !line.startsWith("#")) {
+                formulas.add(line);
             }
-
-            System.out.println("Formula: " + line);
-            long startTime = System.nanoTime(); // Start timer
-            solve(line); // Solve the formula
-            long endTime = System.nanoTime(); // End timer
-            long duration = (endTime - startTime) / 1_000; // Calculate time in microseconds
-            System.out.println("Time taken: " + duration + " µs\n");
         }
-        reader.close(); // Close the file reader after processing all lines
+        reader.close();
+        return formulas;
     }
 
-    // Solve the boolean formula using the DPLL algorithm
-    private static void solve(String formula) {
-        literalValues = new HashMap<>(); // Reinitialize the map for each formula
-        clauses = parseFormula(formula); // Parse the formula into clauses
+    // Method to perform DPLL on a CNF formula
+    public static boolean dpll(List<Set<String>> clauses, Map<String, Boolean> assignment) {
+        // Unit Propagation
+        unitPropagation(clauses, assignment);
 
-        if (dpll()) { // Try to solve using DPLL
-            System.out.println("Formula is satisfiable with assignment: " + literalValues);
-        } else {
-            System.out.println("Formula is unsatisfiable.");
+        // Check if the formula is satisfied
+        if (clauses.isEmpty()) return true;
+
+        // Check for an empty clause (unsatisfiable)
+        for (Set<String> clause : clauses) {
+            if (clause.isEmpty()) return false;
+        }
+
+        // Pure literal elimination
+        pureLiteralElimination(clauses, assignment);
+
+        // Select the next variable to assign a value (non-deterministic choice)
+        String variable = selectVariable(clauses);
+
+        // Try assigning true to the variable and recurse
+        clauses = new ArrayList<>(clauses);
+        assignment.put(variable, true);
+        if (dpll(clauses, assignment)) return true;
+
+        // Backtrack and try assigning false to the variable
+        assignment.put(variable, false);
+        return dpll(clauses, assignment);
+    }
+
+    // Perform unit propagation
+    private static void unitPropagation(List<Set<String>> clauses, Map<String, Boolean> assignment) {
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            Iterator<Set<String>> iterator = clauses.iterator();
+            while (iterator.hasNext()) {
+                Set<String> clause = iterator.next();
+                if (clause.size() == 1) {
+                    String unit = clause.iterator().next();
+                    boolean value = !unit.startsWith("-");
+                    String var = unit.replace("-", "");
+                    assignment.put(var, value);
+                    iterator.remove();
+                    changed = true;
+                }
+            }
         }
     }
 
-    // Parse the formula into a list of clauses
-    private static List<List<Character>> parseFormula(String formula) {
-        List<List<Character>> clauses = new ArrayList<>();
-        String[] rawClauses = formula.split("\\)\\s*\\(\\s*"); // Split the formula into clauses
+    // Perform pure literal elimination
+    private static void pureLiteralElimination(List<Set<String>> clauses, Map<String, Boolean> assignment) {
+        Set<String> allLiterals = new HashSet<>();
+        Set<String> pureLiterals = new HashSet<>();
 
-        for (String rawClause : rawClauses) {
-            rawClause = rawClause.replaceAll("[\\(\\)]", "").trim();
-            String[] literals = rawClause.split("\\s+");
-            List<Character> clause = new ArrayList<>();
+        // Collect all literals in the formula
+        for (Set<String> clause : clauses) {
+            for (String literal : clause) {
+                allLiterals.add(literal);
+            }
+        }
+
+        // Find pure literals (appear with only one polarity)
+        for (String literal : allLiterals) {
+            String negLiteral = "-" + literal;
+            if (!allLiterals.contains(negLiteral)) {
+                pureLiterals.add(literal);
+            }
+        }
+
+        // Assign truth values to pure literals
+        for (String literal : pureLiterals) {
+            boolean value = !literal.startsWith("-");
+            String var = literal.replace("-", "");
+            assignment.put(var, value);
+            removeLiteralFromClauses(clauses, literal);
+        }
+    }
+
+    // Remove literal from clauses
+    private static void removeLiteralFromClauses(List<Set<String>> clauses, String literal) {
+        for (Iterator<Set<String>> iterator = clauses.iterator(); iterator.hasNext();) {
+            Set<String> clause = iterator.next();
+            clause.remove(literal);
+            if (clause.isEmpty()) {
+                iterator.remove(); // Remove empty clause
+            }
+        }
+    }
+
+    // Select an unassigned variable (heuristic choice)
+    private static String selectVariable(List<Set<String>> clauses) {
+        for (Set<String> clause : clauses) {
+            for (String literal : clause) {
+                String var = literal.replace("-", "");
+                return var; // Return first unassigned variable
+            }
+        }
+        return null; // No more variables to select
+    }
+
+    // Convert the CNF formula string to a list of clauses (sets of literals)
+    private static List<Set<String>> convertToClauses(String formula) {
+        List<Set<String>> clauses = new ArrayList<>();
+        String[] clauseStrings = formula.split("\\^");
+        for (String clauseString : clauseStrings) {
+            clauseString = clauseString.trim().replace("(", "").replace(")", "");
+            String[] literals = clauseString.split("v");
+            Set<String> clause = new HashSet<>();
             for (String literal : literals) {
-                clause.add(literal.charAt(0));
+                clause.add(literal.trim());
             }
             clauses.add(clause);
         }
         return clauses;
     }
 
-    // DPLL algorithm implementation
-    private static boolean dpll() {
-        // Perform unit propagation and pure literal elimination
-        while (true) {
-            boolean unitClauseFound = unitPropagation();
-            boolean pureLiteralFound = pureLiteralElimination();
-            if (!unitClauseFound && !pureLiteralFound) {
-                break; // No unit clauses or pure literals found, exit loop
-            }
-        }
+    public static void main(String[] args) {
+        try {
+            // Read CNF formulas from the file
+            List<String> formulas = parseCNFFile("input.txt");
 
-        // If all clauses are satisfied, return true
-        if (isFormulaSatisfied()) {
-            return true;
-        }
+            // Process each CNF formula
+            for (String formula : formulas) {
+                System.out.println("Processing: " + formula);
+                List<Set<String>> clauses = convertToClauses(formula);
+                Map<String, Boolean> assignment = new HashMap<>();
 
-        // If there are no clauses left, return false (unsatisfiable)
-        if (hasEmptyClause()) {
-            return false;
-        }
+                // Run DPLL on the formula
+                boolean isSatisfiable = dpll(clauses, assignment);
 
-        // Choose a literal and try both assignments (true and false)
-        char unassignedLiteral = chooseLiteral();
-        literalValues.put(unassignedLiteral, true);
-        if (dpll()) {
-            return true; // If true assignment satisfies the formula, return true
-        }
-
-        // If false assignment doesn't work, backtrack and try the false assignment
-        literalValues.put(unassignedLiteral, false);
-        return dpll();
-    }
-
-    // Unit propagation step: Assign values to unit clauses
-    private static boolean unitPropagation() {
-        boolean changed = false;
-        for (List<Character> clause : clauses) {
-            // If the clause has exactly one unassigned literal, it's a unit clause
-            if (clause.size() == 1) {
-                char literal = clause.get(0);
-                if (!literalValues.containsKey(literal) && !literalValues.containsKey(getNegation(literal))) {
-                    literalValues.put(literal, true); // Assign the literal to true
-                    changed = true;
+                // Output the result
+                if (isSatisfiable) {
+                    System.out.println("Satisfiable with assignment: " + assignment);
+                } else {
+                    System.out.println("Unsatisfiable");
                 }
+                System.out.println();
             }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return changed;
-    }
-
-    // Pure literal elimination step: Eliminate literals that appear in only one polarity
-    private static boolean pureLiteralElimination() {
-        Set<Character> pureLiterals = new HashSet<>();
-        Map<Character, Integer> literalCounts = new HashMap<>();
-
-        for (List<Character> clause : clauses) {
-            for (char literal : clause) {
-                literalCounts.put(literal, literalCounts.getOrDefault(literal, 0) + 1);
-                literalCounts.put(getNegation(literal), literalCounts.getOrDefault(getNegation(literal), 0) + 1);
-            }
-        }
-
-        // If a literal appears only in one polarity, eliminate it
-        for (Map.Entry<Character, Integer> entry : literalCounts.entrySet()) {
-            if (entry.getValue() == 1 && !literalValues.containsKey(entry.getKey())) {
-                pureLiterals.add(entry.getKey());
-            }
-        }
-
-        boolean changed = false;
-        for (char literal : pureLiterals) {
-            literalValues.put(literal, true); // Assign pure literal to true
-            changed = true;
-        }
-        return changed;
-    }
-
-    // Check if the formula is satisfied with the current assignment
-    private static boolean isFormulaSatisfied() {
-        for (List<Character> clause : clauses) {
-            boolean satisfied = false;
-            for (char literal : clause) {
-                if (literalValues.containsKey(literal) && literalValues.get(literal)) {
-                    satisfied = true;
-                    break;
-                } else if (literalValues.containsKey(getNegation(literal)) && !literalValues.get(getNegation(literal))) {
-                    satisfied = true;
-                    break;
-                }
-            }
-            if (!satisfied) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Check if any clause is empty (i.e., unsatisfied)
-    private static boolean hasEmptyClause() {
-        for (List<Character> clause : clauses) {
-            boolean empty = true;
-            for (char literal : clause) {
-                if (literalValues.containsKey(literal) || literalValues.containsKey(getNegation(literal))) {
-                    empty = false;
-                    break;
-                }
-            }
-            if (empty) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Choose an unassigned literal (arbitrary choice)
-    private static char chooseLiteral() {
-        for (List<Character> clause : clauses) {
-            for (char literal : clause) {
-                if (!literalValues.containsKey(literal) && !literalValues.containsKey(getNegation(literal))) {
-                    return literal;
-                }
-            }
-        }
-        throw new IllegalStateException("No unassigned literals left");
-    }
-
-    // Get the negation of a literal
-    private static char getNegation(char literal) {
-        return (literal >= 'a' && literal <= 'u') ? (char) (literal ^ 32) : literal;
     }
 }
