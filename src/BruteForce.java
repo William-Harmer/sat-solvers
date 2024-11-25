@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class SATSolver {
+public class BruteForce {
     private static Map<Character, Boolean> literalValues; // A hashmap that stores the literal and then the potential values it could be, true or false. Top level as I like keeping the state of the hashmap across multiple methods if needed.
 
     public static void main(String[] args) throws IOException {
