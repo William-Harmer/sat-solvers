@@ -1,31 +1,4 @@
-# Example CNFs in the required format
+# v cannot be used as a literal
 
-# CNF 1
-(a v b v c) ^ (-d v e v f) ^ (g v -h) ^ (i v -j v k)
-
-# CNF 2
-(a v -b) ^ (c v d) ^ (-e v f v g) ^ (h v i)
-
-# CNF 3
-(-a v b v c) ^ (-d v e v f) ^ (g v h v -i) ^ (-j v k)
-
-# CNF 4
-(a v b v -c) ^ (d v e) ^ (f v g v h) ^ (i v -j)
-
-# CNF 5
-(a v -b v c) ^ (d v e) ^ (-f v g v h) ^ (-i v j v k)
-
-# CNF 6
-(a v -b v c) ^ (-d v e) ^ (f v g v -h) ^ (i v j)
-
-# CNF 7
-(-a v b) ^ (c v d) ^ (e v -f) ^ (-g v h v i) ^ (j v k)
-
-# CNF 8
-(a v b) ^ (c v -d v e) ^ (f v g v -h) ^ (-i v j v k)
-
-# CNF 9
-(-a v b v c) ^ (d v -e v f) ^ (-g v h v i) ^ (-j v k)
-
-# CNF 10
-(a v b v -c) ^ (d v -e v f) ^ (g v h) ^ (-i v j v k)
+(a v -b) ^ ( -a v b) ^ (a v c) ^ (-c)
+# (a v b) ^ (-a v -b) ^ (a v -c) ^ (c)
