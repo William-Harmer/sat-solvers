@@ -49,28 +49,17 @@ public class UnitPropagation {
 
     public static void main(String[] args) {
 
-        String formula = "(b)^(b)^(-bvc)^(Cve)";
+        String formula = "(b)^(bvc)^(Bvc)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
 
         // Print the array
-        for (ArrayList<Character> row : clauses) {
-            for (Character element : row) {
-                System.out.print(element);
-            }
-            System.out.print(" ");
-        }
+        System.out.println(clauses);
 
         // Now apply unit propagation to formula
         unitPropagation(clauses);
 
         // Print the array
-        System.out.println();
-        for (ArrayList<Character> row : clauses) {
-            for (Character element : row) {
-                System.out.print(element);
-            }
-            System.out.print(" ");
-        }
+        System.out.println(clauses);
     }
 
 }

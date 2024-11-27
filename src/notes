@@ -1,3 +1,1 @@
-unit propagation:
-check whether the formula has stayed the same, for the same amount of time there are unit clauses currently
-but I need to make a way to make it skip a unit clause if it has been checked already and nothing changed
+I could have a brute force method with early stopping and one without

@@ -2,6 +2,9 @@ import java.util.ArrayList;
 
 public class Utility {
     public static ArrayList<ArrayList<Character>> formulaTo2DArrayList(String formula) {
+        // Strip all whitespace from the formula
+        formula = formula.replaceAll("\\s", "");
+
         // Create the 2D ArrayList to store clauses
         ArrayList<ArrayList<Character>> clauses = new ArrayList<>();
 
