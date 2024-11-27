@@ -1,6 +1,15 @@
 import java.util.ArrayList;
 
 public class Utility {
+
+    public static char negate(char literal) {
+        if (Character.isUpperCase(literal)) {
+            return Character.toLowerCase(literal);
+        } else {
+            return Character.toUpperCase(literal);
+        }
+    }
+
     public static ArrayList<ArrayList<Character>> formulaTo2DArrayList(String formula) {
         // Strip all whitespace from the formula
         formula = formula.replaceAll("\\s", "");

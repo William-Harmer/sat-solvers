@@ -1,1 +1,2 @@
-I could have a brute force method with early stopping and one without
+question: what if i need a data structure that allows duplicates but i dont care about the order like an arraylist
+

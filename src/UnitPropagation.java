@@ -3,14 +3,6 @@ import java.util.*;
 
 public class UnitPropagation {
 
-    private static char negate(char literal) {
-        if (Character.isUpperCase(literal)) {
-            return Character.toLowerCase(literal);
-        } else {
-            return Character.toUpperCase(literal);
-        }
-    }
-
     public static void unitPropagation(ArrayList<ArrayList<Character>> clauses) {
         boolean formulaModified; // Track if the formula was modified
 
@@ -32,8 +24,8 @@ public class UnitPropagation {
                             i--; // Adjust index
                             j--; // Adjust j due to removal
                             formulaModified = true; // Record modification
-                        } else if (currentClause.contains(negate(unitClauseElement))) { // If negated version is found
-                            clauses.get(i).remove((Character) negate(unitClauseElement)); // Remove the element
+                        } else if (currentClause.contains(Utility.negate(unitClauseElement))) { // If negated version is found
+                            clauses.get(i).remove((Character) Utility.negate(unitClauseElement)); // Remove the element
                             formulaModified = true; // Record modification
                         }
                     }
