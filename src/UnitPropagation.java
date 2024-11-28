@@ -20,18 +20,17 @@ public class UnitPropagation {
 
                     for (int i = 0; i < clauses.size(); i++) { // For each clause
                         if (i == j) continue; // Apart from its own
-                        ArrayList<Character> currentClause = clauses.get(i);
 //                        System.out.println("Checking clause " + i + ": " + currentClause);
 
-                        if (currentClause.contains(unitClauseElement)) { // If clause contains the unit clause element
+                        if (clauses.get(i).contains(unitClauseElement)) { // If clause contains the unit clause element
 //                            System.out.println("Clause " + i + " contains the unit element " + unitClauseElement);
                             clauses.remove(i); // Remove the whole clause
                             i--; // Adjust index
                             j--; // Adjust j due to removal
                             formulaModified = true; // Record modification
 //                            System.out.println("Removed clause " + i + ", new clauses: " + clauses);
-                        } else if (currentClause.contains(Utility.negate(unitClauseElement))) { // If negated version is found
-                            if(currentClause.size() == 1) { // If the negated literal is just by itself in a clause, remove the whole clause
+                        } else if (clauses.get(i).contains(Utility.negate(unitClauseElement))) { // If negated version is found
+                            if(clauses.get(i).size() == 1) { // If the negated literal is just by itself in a clause, remove the whole clause
                                 clauses.remove(i);
                                 i--;
                                 j--;

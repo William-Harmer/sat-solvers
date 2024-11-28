@@ -7,7 +7,7 @@ For a pure literal, any clauses that the pure literal is in can be removed
 DPLL:
 unit prop
 Any literal that is pure literal, remove those clauses and assign truth value to that literal (Do that for all pure literals)
-then brute force
+then brute force (Instead of brute force can you make it so that as soon as a clause is set as positive it skips???)
 
 unit prop
 pure literal elim

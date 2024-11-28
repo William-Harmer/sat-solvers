@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class UnitPropagationAndBruteForce {
+public class UPAndBF {
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("input.txt")); // Open file for reading
         String line;
