@@ -3,7 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class UPandPLEandBF {
+public class UPAndPLEAndBF {
 
     // Unit prop
     // pure lit
@@ -22,12 +22,12 @@ public class UPandPLEandBF {
             System.out.println("Formula: " + line);
             ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(line);
             System.out.println("The 2D arraylist: " + clauses);
-
             boolean formulaChanged;
+            HashMap<Character, Boolean> pureLiteralsTruthValues =  new HashMap<>();
             do {
                 formulaChanged = false;
 
-                // Create a deep copy of the current clauses to detect changes
+                // Create a copy of the current clauses to detect changes
                 ArrayList<ArrayList<Character>> previousClauses = new ArrayList<>();
                 for (ArrayList<Character> clause : clauses) {
                     previousClauses.add(new ArrayList<>(clause)); // Deep copy of each clause
@@ -38,7 +38,7 @@ public class UPandPLEandBF {
                 System.out.println("The 2D ArrayList after Unit Propagation: " + clauses);
 
                 // Apply Pure Literal Elimination
-                HashMap<Character, Boolean> pureLiteralsTruthValues = PureLiteralElimination.pureLiteralElimination(clauses);
+                PureLiteralElimination.pureLiteralElimination(clauses, pureLiteralsTruthValues);
                 System.out.println("The truth values of the pure literals: " + pureLiteralsTruthValues);
                 System.out.println("The 2D ArrayList after Pure Literal Elimination: " + clauses);
 
@@ -51,23 +51,30 @@ public class UPandPLEandBF {
                 }
 
             } while (formulaChanged);
+            // This formula changed system is really bad
 
             System.out.println("Final 2D ArrayList: " + clauses);
 
+            if (clauses.isEmpty()){ // If arraylist is completely empty it is sat
+                System.out.println("Sat");
+                System.out.println(pureLiteralsTruthValues);
+                continue;
+            } else if (clauses.stream().anyMatch(List::isEmpty)) { // If the clause has at least one empty clause
+                System.out.println("Not sat");
+                continue;
+            }
 
-            // Need to sort out the fact that the truth values dont save after wrapping around the second time
+            // Otherwise brute force to find the rest and then add all truth values together
 
-
-            // If the clause is completely empty it means it is sat, end here and give values
-            // If the clause has at least one empty clause, it means it is not sat, end here and give values
-
-            // Need to add pureLiteralsTruthValues with the other truth values, but make sure to only do that if sat
             System.out.println();
             LinkedHashMap<Character, Boolean> satAssignment = BruteForce.bruteForceEarlyStopping(clauses);
             System.out.println("Brute force with early stopping:");
-            System.out.println(satAssignment);
-            System.out.println();
-
+            if (satAssignment.isEmpty()) {
+                System.out.println("Not sat");
+            } else {
+                System.out.println("Sat");
+                satAssignment.putAll(pureLiteralsTruthValues);
+            }
         }
         reader.close();
     }

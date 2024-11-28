@@ -1,9 +1,10 @@
 question: what if i need a data structure that allows duplicates but i dont care about the order like an arraylist.
 For my clauses data structure.
 
-FIX UNIT PROPAGATION
-I need to add the fact that if there are empty clauses, that means that it is unsat
-or i could make it so that it never gets to that point???
+Things to do:
+dix formula changed system for UPAndPLEAndBF.
+I need to add the fact that if there are empty clauses, that means that it is unsat.
+Create a Main that does all the looping through the formulas instead of doing that in each class.
 
 DPLL??:
 unit prop
