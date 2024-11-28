@@ -99,11 +99,11 @@ public class BruteForce {
             System.out.println("The 2D arraylist: " + clauses);
 
             // Brute force with early stopping
-            LinkedHashMap<Character, Boolean> satAssignment = bruteForceEarlyStopping(clauses);
-            System.out.println();
-            System.out.println("Brute force with early stopping:");
-            System.out.println(satAssignment);
-            System.out.println();
+//            LinkedHashMap<Character, Boolean> satAssignment = bruteForceEarlyStopping(clauses);
+//            System.out.println();
+//            System.out.println("Brute force with early stopping:");
+//            System.out.println(satAssignment);
+//            System.out.println();
 
             // Brute force without early stopping
             HashSet<LinkedHashMap<Character, Boolean>> allSatAssignments = bruteForce(clauses);

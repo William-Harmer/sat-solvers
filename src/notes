@@ -1,2 +1,22 @@
-question: what if i need a data structure that allows duplicates but i dont care about the order like an arraylist
+question: what if i need a data structure that allows duplicates but i dont care about the order like an arraylist.
+For my clauses data structure.
+
+If one of the clauses is 0, it will never be sat
+For a pure literal, any clauses that the pure literal is in can be removed
+
+DPLL:
+unit prop
+Any literal that is pure literal, remove those clauses and assign truth value to that literal (Do that for all pure literals)
+then brute force
+
+unit prop
+pure literal elim
+
+
+
+
+My own personal method:
+unit prop
+then pure literal elm
+then brute force with early stopping
 

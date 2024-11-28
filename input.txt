@@ -2,6 +2,7 @@
 // ^ is and
 // v cannot be used as a literal
 // (a v -b) ^ ( -a v b) ^ (a v c) ^ (-c)
-(a v b) ^ (-a v -b) ^ (a v -c) ^ (d)
+// (a v b) ^ (-a v -b) ^ (a v -c) ^ (d)
 (a v -b)^(-a v b v c)^(-c v b)^(c)
+// (a v b)^(a v B)
 
