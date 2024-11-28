@@ -11,9 +11,9 @@ public class BruteForce {
     }
 
     private static Object bruteForce(ArrayList<ArrayList<Character>> clauses, boolean earlyStopping) {
+        LinkedHashMap<Character, Boolean> literalTruthAssignments = new LinkedHashMap<>();
 
         // Get all unique literals
-        LinkedHashMap<Character, Boolean> literalTruthAssignments = new LinkedHashMap<>();
         for (ArrayList<Character> clause : clauses) {
             for (Character literal : clause) {
                 literalTruthAssignments.put(Character.toLowerCase(literal), false);
@@ -110,6 +110,7 @@ public class BruteForce {
             System.out.println();
             System.out.println("Brute force sat:");
             System.out.println(allSatAssignments);
+            System.out.println();
 
         }
         reader.close(); // Close file reader after going through all lines

@@ -41,7 +41,7 @@ public class UnitPropagation {
 
     public static void main(String[] args) {
 
-        String formula = "(b)^(bvc)^(Bvc)";
+        String formula = "(b)^(bvc)^(Bvc)^(B)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
 
         // Print the array
