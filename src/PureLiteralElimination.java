@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class PureLiteralElimination {
-    private static HashMap<Character, Boolean> pureLiteralElimination(ArrayList<ArrayList<Character>> clauses){
+    public static HashMap<Character, Boolean> pureLiteralElimination(ArrayList<ArrayList<Character>> clauses){
         // Create a map to store all the literals
         HashMap<Character, Boolean> pureLiterals = new HashMap<>();
         HashSet<Character> uniqueLiterals = new HashSet<>();
@@ -22,7 +22,7 @@ public class PureLiteralElimination {
             }
         }
         uniqueLiterals.clear();
-        System.out.println("Pure literals: " + pureLiterals);
+//        System.out.println("Pure literals: " + pureLiterals);
 
 
         for (int i = 0; i < clauses.size(); i++) { // For each clause
@@ -35,16 +35,17 @@ public class PureLiteralElimination {
                 }
             }
         }
-        System.out.println("New formula: " + clauses);
 
         // Now return the hashmap
         return pureLiterals;
     }
 
     public static void main(String[] args) {
-        String formula = "(b)^(bvc)^(Bvc)^(B)";
+        String formula = "(b)^(B)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
         System.out.println("Formula: " + clauses);
         HashMap<Character, Boolean> pureLiteralsTruthValues  = pureLiteralElimination(clauses);
+        System.out.println("New formula: " + clauses);
+        System.out.println(pureLiteralsTruthValues);
     }
 }

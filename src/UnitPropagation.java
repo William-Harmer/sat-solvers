@@ -30,13 +30,13 @@ public class UnitPropagation {
                             formulaModified = true; // Record modification
 //                            System.out.println("Removed clause " + i + ", new clauses: " + clauses);
                         } else if (clauses.get(i).contains(Utility.negate(unitClauseElement))) { // If negated version is found
-                            if(clauses.get(i).size() == 1) { // If the negated literal is just by itself in a clause, remove the whole clause
-                                clauses.remove(i);
-                                i--;
-                                j--;
-                            } else { // Otherwise just remove that element
-                                clauses.get(i).remove((Character) Utility.negate(unitClauseElement));
-                            }
+//                            if(clauses.get(i).size() == 1) { // If the negated literal is just by itself in a clause, remove the whole clause
+//                                clauses.remove(i);
+//                                i--;
+//                                j--;
+//                            } else { // Otherwise just remove that element
+                            clauses.get(i).remove((Character) Utility.negate(unitClauseElement));
+//                            }
                             formulaModified = true; // Record modification
 
 //                            System.out.println("Clause " + i + " contains the negation of " + unitClauseElement);
@@ -55,7 +55,7 @@ public class UnitPropagation {
 
     public static void main(String[] args) {
 
-        String formula = "(b)^(bvc)^(Bvc)^(B)";
+        String formula = "(bvc)^(B)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
 
         // Print the array

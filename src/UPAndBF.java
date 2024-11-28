@@ -23,6 +23,7 @@ public class UPAndBF {
             System.out.println();
 
         }
+        reader.close();
     }
 }
 
