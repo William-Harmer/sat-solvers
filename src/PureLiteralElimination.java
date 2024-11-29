@@ -27,7 +27,7 @@ public class PureLiteralElimination {
         for (int i = 0; i < clauses.size(); i++) { // For each clause
             for (Character literal : clauses.get(i)) { // For each literal in the clause
                 if (pureLiterals.containsKey(literal)) { // If the literal is pure
-                    System.out.println("removing" + literal);
+//                    System.out.println("removing " + literal);
                     // Remove the whole clause
                     clauses.remove(i);
                     i--;
