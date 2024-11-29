@@ -21,7 +21,7 @@ public class BruteForce {
         }
 
         int totalCombinations = (int) Math.pow(2, literalTruthAssignments.size());  // 2^n combinations
-        System.out.println("Total combinations: " + totalCombinations);
+//        System.out.println("Total combinations: " + totalCombinations);
 
         // Create the hashset to store all the truth assignments if early stopping is not true
         HashSet<LinkedHashMap<Character, Boolean>> satTruthAssignments = null;
@@ -43,16 +43,16 @@ public class BruteForce {
                 // Move to the next literal index
                 literalIndex++;
             }
-            System.out.println("Assignment for combination " + i + ": " + literalTruthAssignments);
+//            System.out.println("Assignment for combination " + i + ": " + literalTruthAssignments);
             literalIndex = 0;
 
             if (isSat(clauses, literalTruthAssignments)){ // If the truth values make it sat
-                System.out.println("Sat with assignments:" + literalTruthAssignments);
+//                System.out.println("Sat with assignments:" + literalTruthAssignments);
                 if (earlyStopping) { // if early stopping is on, just return the linked hashmap
-                    System.out.println("Stopping now as early stopping");
+//                    System.out.println("Stopping now as early stopping");
                     return literalTruthAssignments;
                 } else { // If early stopping is on, add it to the set
-                    System.out.println("Added to the set");
+//                    System.out.println("Added to the set");
                     satTruthAssignments.add(new LinkedHashMap<>(literalTruthAssignments));
                 }
             }
