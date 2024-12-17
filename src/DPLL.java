@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class DPLL {
+
     private static boolean dPLL(ArrayList<ArrayList<Character>> clauses, HashMap<Character, Boolean> literalTruthValues){
         System.out.println("Formula:" + clauses);
         // Is there ever a scenario where you need to unit prop again after pure literal?? i dont think so
@@ -22,6 +22,7 @@ public class DPLL {
             System.out.println("Not sat");
             return false;
         }
+
         System.out.println("Recursing");
 
         ArrayList<ArrayList<Character>> clausesCopy = deepCopy(clauses);
@@ -44,6 +45,7 @@ public class DPLL {
         }
         return clauses;
     }
+
     private static ArrayList<ArrayList<Character>> deepCopy(ArrayList<ArrayList<Character>> clauses) {
         ArrayList<ArrayList<Character>> copiedClauses = new ArrayList<>();
         for (ArrayList<Character> clause : clauses) {

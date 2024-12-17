@@ -1,11 +1,1 @@
-question: what if i need a data structure that allows duplicates but i dont care about the order like an arraylist.
-For my clauses data structure.
-
-Things to do:
-Create a Main that does all the looping through the formulas instead of doing that in each class.
-Make a UP and PLE and BF
-
-Rules:
-If one of the clauses is 0, it will never be sat
-For a pure literal, any clauses that the pure literal is in can be removed (Is this true????)
-
+Create a solver that is just PLE and BF
