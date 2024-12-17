@@ -27,7 +27,7 @@ public class DPLL {
         ArrayList<ArrayList<Character>> clausesCopy = deepCopy(clauses);
         HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
 
-        // not getting the correct copy
+
         return dPLL(addFirstElementAsNewClauseToFormula(clauses, true), literalTruthValues) || dPLL(addFirstElementAsNewClauseToFormula(clausesCopy, false), truthTableCopy);
     }
 

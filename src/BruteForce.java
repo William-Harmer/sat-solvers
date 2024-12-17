@@ -30,7 +30,7 @@ public class BruteForce {
         }
 
         int literalIndex = 0;
-        for (int i = 0; i < totalCombinations; i++) { // For all combinations there are (Apart from the first one)
+        for (int i = 0; i < totalCombinations; i++) { // For all combinations there are
             for (Character literal : literalTruthAssignments.keySet()) { // For each key in the map
 
                 // Calculate the truth value for the jth bit in i, j is literalIndex.

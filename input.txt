@@ -5,6 +5,6 @@
 (a v b) ^ (-a v -b) ^ (a v -c) ^ (d)
 (a v -b) ^ (-a v b v c) ^ (-c v b) ^ (c)
 (bvc)^(B)
- (b)^(B)
+(b)^(B)
 (a v b)^(a v B)
 

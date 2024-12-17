@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class PureLiteralElimination {
+
     public static void pureLiteralElimination(ArrayList<ArrayList<Character>> clauses, HashMap<Character, Boolean> pureLiterals){
         // Create a map to store all the literals
         HashSet<Character> uniqueLiterals = new HashSet<>();
