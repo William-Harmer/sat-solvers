@@ -1,3 +1,4 @@
+# The Development and Comparison of Sat Solvers
 **Note:** This project is a work in progress and is still being developed. Updates and improvements are ongoing.
 
 This is my undergraduate dissertation project, where I aim to develop a series of satisfiability (SAT) solvers, starting with basic implementations and progressing towards the further optimised solvers we have today. My solvers will handle formulas expressed in conjunctive normal form (CNF).
