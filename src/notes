@@ -1,1 +1,3 @@
 Create a solver that is just PLE and BF
+
+// 400 literal places is good for brute forces it takes about 200 seconds

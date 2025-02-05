@@ -5,7 +5,7 @@ public class DPLL {
 
     private static boolean dPLL(ArrayList<ArrayList<Character>> clauses, HashMap<Character, Boolean> literalTruthValues){
         System.out.println("Formula:" + clauses);
-        // Is there ever a scenario where you need to unit prop again after pure literal?? i dont think so
+        // Is there ever a scenario where you need to unit prop again after pure literal?? With my testing I think no
 
         UnitPropagation.unitPropagation(clauses);
         System.out.println("Unit prop: " + clauses);
@@ -29,7 +29,8 @@ public class DPLL {
         HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
 
 
-        return dPLL(addFirstElementAsNewClauseToFormula(clauses, true), literalTruthValues) || dPLL(addFirstElementAsNewClauseToFormula(clausesCopy, false), truthTableCopy);
+        return dPLL(addFirstElementAsNewClauseToFormula(clauses, true), literalTruthValues)
+                || dPLL(addFirstElementAsNewClauseToFormula(clausesCopy, false), truthTableCopy);
     }
 
     private static ArrayList<ArrayList<Character>> addFirstElementAsNewClauseToFormula(ArrayList<ArrayList<Character>> clauses, boolean negated){

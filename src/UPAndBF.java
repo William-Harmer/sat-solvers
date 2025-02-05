@@ -15,6 +15,7 @@ public class UPAndBF {
     }
 
     public static void main(String[] args) throws IOException {
+
         String formula = "(avb)^(cvB)^(avd)^(A)^(a)";
         LinkedHashMap<Character, Boolean> satAssignment = uPAndBF(formula);
         System.out.println(satAssignment);
