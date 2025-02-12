@@ -11,7 +11,7 @@ public class PureLiteralElimination {
             uniqueLiterals.addAll(clause);
         }
 
-        System.out.println("Unique literals: " + uniqueLiterals);
+//        System.out.println("Unique literals: " + uniqueLiterals);
 
         for (Character literal : uniqueLiterals) {
             if (uniqueLiterals.contains(Utility.negate(literal))) { // Not pure
