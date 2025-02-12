@@ -11,11 +11,13 @@ public class PureLiteralElimination {
             uniqueLiterals.addAll(clause);
         }
 
+        System.out.println("Unique literals: " + uniqueLiterals);
+
         for (Character literal : uniqueLiterals) {
             if (uniqueLiterals.contains(Utility.negate(literal))) { // Not pure
             } else{ // Pure
                 if (Character.isUpperCase(literal)) {
-                    pureLiterals.put(literal, false);
+                    pureLiterals.put(Character.toLowerCase(literal), false);
                 } else {
                     pureLiterals.put(literal, true);
                 }
@@ -27,19 +29,20 @@ public class PureLiteralElimination {
 
         for (int i = 0; i < clauses.size(); i++) { // For each clause
             for (Character literal : clauses.get(i)) { // For each literal in the clause
-                if (pureLiterals.containsKey(literal)) { // If the literal is pure
+                if (pureLiterals.containsKey(Character.toLowerCase(literal))) { // If the literal is pure
 //                    System.out.println("removing " + literal);
                     // Remove the whole clause
                     clauses.remove(i);
                     i--;
                     break;
                 }
+
             }
         }
     }
 
     public static void main(String[] args) {
-        String formula = "(avb)^(avB)";
+        String formula = "(B)^(a)^(a)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
         System.out.println("Formula: " + clauses);
         HashMap<Character, Boolean> pureLiteralsTruthValues = new HashMap<>();
