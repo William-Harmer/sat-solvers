@@ -1,2 +1,51 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class PLEAndBF {
+    public static HashMap<Character, Boolean> pLEAAndBF(ArrayList<ArrayList<Character>> clauses) {
+
+        HashMap<Character, Boolean> literalTruthValues = new HashMap<>();
+
+        // PLE the formula
+        PureLiteralElimination.pureLiteralElimination(clauses, literalTruthValues);
+
+        // Early exit if the formula is already satisfiable or unsatisfiable
+        if (clauses.isEmpty()) {
+//            System.out.println("SAT");
+            return literalTruthValues;
+        }
+
+        // Check if any clauses are empty (Unsatisfiable)
+        if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
+//            System.out.println("Not SAT");
+            return null;  // Return null to indicate unsatisfiable
+        }
+
+        // Solve using Brute Force if the formula is not immediately satisfiable or unsatisfiable
+        HashMap<Character, Boolean> satAssignment = BruteForce.bruteForceEarlyStopping(clauses);
+        System.out.println("Brute force result: " + satAssignment);
+
+        if (satAssignment == null) {
+            return null;
+        } else {
+            literalTruthValues.putAll(satAssignment);
+            return literalTruthValues;  // Return the final truth assignments
+
+        }
+
+    }
+
+    public static void main(String[] args) {
+        String formula = "(avb)^(cvB)^(avd)^(A)^(a)";
+        System.out.println(formula);
+        ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
+        System.out.println(clauses);
+
+        HashMap<Character, Boolean> satAssignment = pLEAAndBF(clauses); // Changed to HashMap
+        if (satAssignment != null) {
+            System.out.println("SAT Assignment: " + satAssignment);
+        } else {
+            System.out.println("Formula is unsatisfiable.");
+        }
+    }
 }

@@ -1,4 +1,0 @@
-Create a solver that is just PLE and BF
-
- 400 literal places is good for brute forces it takes about 200 seconds
-Dont pure literal eliminated the first CDCL solver as this usually isnt added in the algorithm

@@ -58,6 +58,11 @@ public class Main {
                     System.out.println("Performing UPAndBF");
                     runSolver(SolverType.UPAndBF, clauses, writer, id, formula);
 
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    // PLE + BF
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    System.out.println("Performing PLEAndBF");
+                    runSolver(SolverType.PLEAndBF, clauses, writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + PLE + BF
@@ -90,6 +95,8 @@ public class Main {
             solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
         } else if(solverType == SolverType.UPAndBF) {
             solverTask = () -> UPAndBF.uPAndBF(clauses);
+        } else if (solverType == SolverType.PLEAndBF) {
+            solverTask = () -> PLEAndBF.pLEAAndBF(clauses);
         } else if (solverType == SolverType.UPAndPLEAndBF) {
             solverTask = () -> UPAndPLEAndBF.uPAndPLEAndBF(clauses);
         }
@@ -202,6 +209,7 @@ public class Main {
     private enum SolverType {
         BruteForceEarlyStopping,
         UPAndBF,
+        PLEAndBF,
         UPAndPLEAndBF
     }
 }

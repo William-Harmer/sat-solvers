@@ -1,0 +1,7 @@
+
+
+400 literal places is good for brute forces it takes about 200 seconds
+
+To do:
+- Fix UPAndPLEAndBF
+- Figure out CDCL
