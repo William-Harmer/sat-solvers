@@ -41,22 +41,29 @@ public class Main {
                     System.out.println("2D arraylist: " + clauses);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // BRUTE FORCE EARLY STOPPING
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing Brute Force with Early Stopping");
-                    runSolver(SolverType.BRUTE_FORCE_EARLY_STOPPING, clauses, writer, id, formula);
-
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // BRUTE FORCE
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing Brute Force");
+                    System.out.println("Performing BruteForce");
                     runBruteForceSolver(clauses, writer, id, formula);
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    // BRUTE FORCE EARLY STOPPING
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    System.out.println("Performing BruteForceEarlyStopping");
+                    runSolver(SolverType.BruteForceEarlyStopping, clauses, writer, id, formula);
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    // UP + BF
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    System.out.println("Performing UPAndBF");
+                    runSolver(SolverType.UPAndBF, clauses, writer, id, formula);
+
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndPLEAndBF");
-                    runSolver(SolverType.UP_AND_PLE_AND_BF, clauses, writer, id, formula);
+                    runSolver(SolverType.UPAndPLEAndBF, clauses, writer, id, formula);
 
                     id++;
                 }
@@ -79,9 +86,11 @@ public class Main {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashMap<Character, Boolean>> solverTask = null;
 
-        if (solverType == SolverType.BRUTE_FORCE_EARLY_STOPPING) {
+        if (solverType == SolverType.BruteForceEarlyStopping) {
             solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
-        } else if (solverType == SolverType.UP_AND_PLE_AND_BF) {
+        } else if(solverType == SolverType.UPAndBF) {
+            solverTask = () -> UPAndBF.uPAndBF(clauses);
+        } else if (solverType == SolverType.UPAndPLEAndBF) {
             solverTask = () -> UPAndPLEAndBF.uPAndPLEAndBF(clauses);
         }
 
@@ -180,7 +189,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",Brute Force," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",BruteForce," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -191,7 +200,8 @@ public class Main {
 
     // Enum for Solver Types to distinguish different solving methods
     private enum SolverType {
-        BRUTE_FORCE_EARLY_STOPPING,
-        UP_AND_PLE_AND_BF
+        BruteForceEarlyStopping,
+        UPAndBF,
+        UPAndPLEAndBF
     }
 }
