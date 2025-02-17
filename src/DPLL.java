@@ -74,7 +74,7 @@ public class DPLL {
     }
 
     public static void main(String[] args) {
-        String formula = "(-a) ^ (a v -a) ^ (a)";
+        String formula = "(-lvc)^(-pvd)^(lvpv-cv-d)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
         System.out.println("Initial formula clauses: " + clauses);
 
