@@ -8,34 +8,35 @@ public class UPAndPLEAndBF {
         // Initialize literalTruthValues inside the method
         HashMap<Character, Boolean> literalTruthValues = new HashMap<>();
 
-        System.out.println("The 2D arraylist: " + clauses);
+//        System.out.println("The 2D arraylist: " + clauses);
 
         // Apply Unit Propagation
         UnitPropagation.unitPropagation(clauses);
-        System.out.println("The 2D arraylist after unit propagation: " + clauses);
+//        System.out.println("The 2D arraylist after unit propagation: " + clauses);
 
         // Apply Pure Literal Elimination
         PureLiteralElimination.pureLiteralElimination(clauses, literalTruthValues);
-        System.out.println("The 2D arraylist after pure literal elimination: " + clauses);
+//        System.out.println("The 2D arraylist after pure literal elimination: " + clauses);
 
-        // Check if clauses are empty (SAT) or contain empty clauses (Unsatisfiable)
+        // Early exit if the formula is already satisfiable or unsatisfiable
         if (clauses.isEmpty()) {
-            // Formula is satisfiable after unit propagation and pure literal elimination
-            System.out.println("SAT");
+//            System.out.println("SAT");
             return literalTruthValues;
-        } else if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
-            // Formula is unsatisfiable due to empty clauses
-            System.out.println("Not SAT");
-            return null; // Return null to indicate unsatisfiable
+        }
+
+        // Check if any clauses are empty (Unsatisfiable)
+        if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
+//            System.out.println("Not SAT");
+            return null;  // Return null to indicate unsatisfiable
         }
 
         // Solve using Brute Force if the formula is not immediately satisfiable or unsatisfiable
         HashMap<Character, Boolean> satAssignment = BruteForce.bruteForceEarlyStopping(clauses);
-        System.out.println("SAT Assignment after brute force: " + satAssignment);
+//        System.out.println("SAT Assignment after brute force: " + satAssignment);
 
         // Merge results (combine the pure literal elimination with brute force solution)
         literalTruthValues.putAll(satAssignment);
-        System.out.println("Combined Assignments: " + literalTruthValues);
+//        System.out.println("Combined Assignments: " + literalTruthValues);
 
         return literalTruthValues;  // Return the final truth assignments
     }
