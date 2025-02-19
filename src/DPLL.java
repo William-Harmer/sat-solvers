@@ -25,7 +25,7 @@ public class DPLL {
 //        System.out.println("Recursing");
 
         // Create copies to preserve the original clause structure and truth table
-        ArrayList<ArrayList<Character>> clausesCopy = deepCopy(clauses);
+        ArrayList<ArrayList<Character>> clausesCopy = Utility.clauseCopy(clauses);
         HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
 
         return executeDPLL(addFirstElementAsNewClauseToFormula(clauses, true), literalTruthValues)
@@ -46,14 +46,6 @@ public class DPLL {
         return clauses;
     }
 
-    private static ArrayList<ArrayList<Character>> deepCopy(ArrayList<ArrayList<Character>> clauses) {
-        ArrayList<ArrayList<Character>> copiedClauses = new ArrayList<>();
-        for (ArrayList<Character> clause : clauses) {
-            copiedClauses.add(new ArrayList<>(clause)); // Create a new ArrayList for each clause
-        }
-        return copiedClauses;
-    }
-
     private static HashMap<Character, Boolean> deepCopyTruthTable(HashMap<Character, Boolean> originalTruthTable) {
         return new HashMap<>(originalTruthTable);
     }
@@ -64,9 +56,9 @@ public class DPLL {
         boolean result = executeDPLL(clauses, literalTruthValues);
 
         if (result) {
-            System.out.println("DPLL Succeeded, Final truth values: " + literalTruthValues);
+//            System.out.println("DPLL Succeeded, Final truth values: " + literalTruthValues);
         } else {
-            System.out.println("DPLL Failed to satisfy the formula.");
+//            System.out.println("DPLL Failed to satisfy the formula.");
             literalTruthValues = new HashMap<>();  // Return an empty map to indicate failure
         }
 

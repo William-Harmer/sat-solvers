@@ -38,37 +38,47 @@ public class Main {
                     System.out.println("\n" + "Processing formula ID: " + id);
                     System.out.println("Formula: " + formula);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
+
                     System.out.println("2D arraylist: " + clauses);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // BRUTE FORCE
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing BruteForce");
-                    runBruteForceSolver(clauses, writer, id, formula);
+                    runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // BRUTE FORCE EARLY STOPPING
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing BruteForceEarlyStopping");
-                    runSolver(SolverType.BruteForceEarlyStopping, clauses, writer, id, formula);
+                    runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndBF");
-                    runSolver(SolverType.UPAndBF, clauses, writer, id, formula);
+                    runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing PLEAndBF");
-                    runSolver(SolverType.PLEAndBF, clauses, writer, id, formula);
+//                    System.out.println(clauses);
+                    runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndPLEAndBF");
-                    runSolver(SolverType.UPAndPLEAndBF, clauses, writer, id, formula);
+//                    System.out.println(clauses);
+                    runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    // DPLL
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    System.out.println("Performing DPLL");
+//                    System.out.println(clauses);
+                    runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula);
 
                     id++;
                 }
@@ -82,6 +92,7 @@ public class Main {
 
     // Method that handles Brute Force and UP + PLE + BF logic
     private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula) {
+//        System.out.println("At the start " + clauses);
         Runtime runtime = Runtime.getRuntime();
         runtime.gc(); // Garbage collection for accurate memory measurement
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -91,6 +102,9 @@ public class Main {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashMap<Character, Boolean>> solverTask = null;
 
+
+//        System.out.println(clauses);
+
         if (solverType == SolverType.BruteForceEarlyStopping) {
             solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
         } else if(solverType == SolverType.UPAndBF) {
@@ -99,6 +113,8 @@ public class Main {
             solverTask = () -> PLEAndBF.pLEAAndBF(clauses);
         } else if (solverType == SolverType.UPAndPLEAndBF) {
             solverTask = () -> UPAndPLEAndBF.uPAndPLEAndBF(clauses);
+        } else if (solverType == SolverType.DPLL) {
+            solverTask = () -> DPLL.dPLL(clauses);
         }
 
         Future<HashMap<Character, Boolean>> future = executor.submit(solverTask);
@@ -143,6 +159,7 @@ public class Main {
         }
 
         executor.shutdown();
+//        System.out.println("At the end:" + clauses);
     }
 
     // Brute Force Solver using HashSet<HashMap>
@@ -210,6 +227,7 @@ public class Main {
         BruteForceEarlyStopping,
         UPAndBF,
         PLEAndBF,
-        UPAndPLEAndBF
+        UPAndPLEAndBF,
+        DPLL
     }
 }

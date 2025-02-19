@@ -42,7 +42,7 @@ public class UPAndPLEAndBF {
     }
 
     public static void main(String[] args) throws IOException {
-        String formula = "(a v b) ^ (a v B) ^ (c v A)";
+        String formula = "(-o v -j) ^ (-f v l v l v t) ^ (-u) ^ (k) ^ (-q v n v -e v s) ^ (b v r) ^ (i) ^ (a v m) ^ (g v c) ^ (p) ^ (-d) ^ (w) ^ (h)";
         System.out.println("Formula: " + formula);
 
         // Parse formula into clauses

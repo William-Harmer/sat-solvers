@@ -3,11 +3,17 @@ import java.util.HashMap;
 
 public class PLEAndBF {
     public static HashMap<Character, Boolean> pLEAAndBF(ArrayList<ArrayList<Character>> clauses) {
+//        System.out.println("Clauses in PLEAANDBF" + clauses);
 
         HashMap<Character, Boolean> literalTruthValues = new HashMap<>();
 
         // PLE the formula
+
         PureLiteralElimination.pureLiteralElimination(clauses, literalTruthValues);
+        // So after it is doing this, it is permanently changing clauses, how do i stop this?
+
+//        System.out.println("Clauses in middle" + clauses);
+
 
         // Early exit if the formula is already satisfiable or unsatisfiable
         if (clauses.isEmpty()) {
@@ -23,16 +29,16 @@ public class PLEAndBF {
 
         // Solve using Brute Force if the formula is not immediately satisfiable or unsatisfiable
         HashMap<Character, Boolean> satAssignment = BruteForce.bruteForceEarlyStopping(clauses);
-        System.out.println("Brute force result: " + satAssignment);
+//        System.out.println("Brute force result: " + satAssignment);
+//
+//        System.out.println("Clauses at end" + clauses);
 
         if (satAssignment == null) {
             return null;
         } else {
             literalTruthValues.putAll(satAssignment);
             return literalTruthValues;  // Return the final truth assignments
-
         }
-
     }
 
     public static void main(String[] args) {

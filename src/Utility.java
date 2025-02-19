@@ -10,6 +10,14 @@ public class Utility {
         }
     }
 
+    public static ArrayList<ArrayList<Character>> clauseCopy(ArrayList<ArrayList<Character>> original) {
+        ArrayList<ArrayList<Character>> copy = new ArrayList<>();
+        for (ArrayList<Character> innerList : original) {
+            copy.add(new ArrayList<>(innerList)); // Create a new list and copy elements
+        }
+        return copy;
+    }
+
     public static ArrayList<ArrayList<Character>> formulaTo2DArrayList(String formula) {
         // Strip all whitespace from the formula
         formula = formula.replaceAll("\\s", "");
