@@ -2,6 +2,24 @@ import java.util.ArrayList;
 
 public class Utility {
 
+    public static ArrayList<ArrayList<Character>> addFirstElementAsNewClauseToFormula(ArrayList<ArrayList<Character>> clauses, boolean useCaps){
+        ArrayList<Character> newClause = new ArrayList<>();
+        clauses.add(newClause);  // Add an empty clause to the formula
+
+        // Get the first element from the first clause
+        char firstLiteral = clauses.get(0).get(0);
+
+        if (useCaps) {
+            // Add the capitalized (uppercase) version of the literal
+            clauses.get(clauses.size() - 1).add(Character.toUpperCase(firstLiteral));
+        } else {
+            // Add the non-capitalized (lowercase) version of the literal
+            clauses.get(clauses.size() - 1).add(Character.toLowerCase(firstLiteral));
+        }
+
+        return clauses;  // Return the modified formula
+    }
+
     public static char negate(char literal) {
         if (Character.isUpperCase(literal)) {
             return Character.toLowerCase(literal);
