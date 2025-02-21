@@ -28,8 +28,8 @@ public class DPLL {
         ArrayList<ArrayList<Character>> clausesCopy = Utility.clauseCopy(clauses);
         HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
 
-        return executeDPLL(Utility.addFirstElementAsNewClauseToFormula(clauses, false), literalTruthValues)
-                || executeDPLL(Utility.addFirstElementAsNewClauseToFormula(clausesCopy, true), truthTableCopy);
+        return executeDPLL(Utility.addFirstElementAsNewClauseToFormula(clauses, false, null), literalTruthValues)
+                || executeDPLL(Utility.addFirstElementAsNewClauseToFormula(clausesCopy, true, null), truthTableCopy);
     }
 
 

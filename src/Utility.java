@@ -1,8 +1,13 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Utility {
 
-    public static ArrayList<ArrayList<Character>> addFirstElementAsNewClauseToFormula(ArrayList<ArrayList<Character>> clauses, boolean useCaps){
+    public static ArrayList<ArrayList<Character>> addFirstElementAsNewClauseToFormula(
+            ArrayList<ArrayList<Character>> clauses,
+            boolean useCaps,
+            HashMap<Character, Boolean> literalMap) {
+
         ArrayList<Character> newClause = new ArrayList<>();
         clauses.add(newClause);  // Add an empty clause to the formula
 
@@ -15,6 +20,11 @@ public class Utility {
         } else {
             // Add the non-capitalized (lowercase) version of the literal
             clauses.get(clauses.size() - 1).add(Character.toLowerCase(firstLiteral));
+        }
+
+        // If a HashMap is passed, add the firstLiteral to the map with a value of true
+        if (literalMap != null) {
+            literalMap.put(firstLiteral, true);
         }
 
         return clauses;  // Return the modified formula
