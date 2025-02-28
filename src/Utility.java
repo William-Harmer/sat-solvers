@@ -26,7 +26,7 @@ public class Utility {
     }
 
 
-    public static char negate(char literal) {
+    public static char oppositePolarity(char literal) {
         if (Character.isUpperCase(literal)) {
             return Character.toLowerCase(literal);
         } else {

@@ -1,4 +1,3 @@
-import java.io.*;
 import java.util.*;
 
 public class UnitPropagation {
@@ -28,10 +27,12 @@ public class UnitPropagation {
                             formulaModified = true; // Record modification
 //                            System.out.println("Removed clause " + i + ", new clauses: " + clauses);
 
-                        } else if (clauses.get(i).contains(Utility.negate(unitClauseElement))) {
+                        } else if (clauses.get(i).contains(Utility.oppositePolarity(unitClauseElement))) {
                             // If negated version is found
 
-                            clauses.get(i).remove((Character) Utility.negate(unitClauseElement));
+                            // What about if a clause has duplicates??????
+
+                            clauses.get(i).remove((Character) Utility.oppositePolarity(unitClauseElement));
                             formulaModified = true; // Record modification
 //                            System.out.println("Clause " + i + " has " + Utility.negate(unitClauseElement));
 //                            System.out.println("New formula: " + clauses);

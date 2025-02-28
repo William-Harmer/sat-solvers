@@ -14,7 +14,7 @@ public class PureLiteralElimination {
 //        System.out.println("Unique literals: " + uniqueLiterals);
 
         for (Character literal : uniqueLiterals) {
-            if (uniqueLiterals.contains(Utility.negate(literal))) { // Not pure
+            if (uniqueLiterals.contains(Utility.oppositePolarity(literal))) { // Not pure
             } else{ // Pure
                 if (Character.isUpperCase(literal)) {
                     pureLiterals.put(Character.toLowerCase(literal), false);
