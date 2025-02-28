@@ -3,31 +3,37 @@ import java.util.HashMap;
 
 public class CDCL {
 
-    private static HashMap<Character, Boolean> cDCL(ArrayList<ArrayList<Character>> clauses){
-        HashMap<Character, Boolean> truthValues = new HashMap<>();
-        int decisionLevel = 0;
-
-        // First of all unitprop once
-        UnitPropagation.unitPropagation(clauses);
-        // Check that it is not unsat just straight off the bat
-        if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
-            return null; // UNSAT
-        }
-
-        // Add first literal in formula as a new clause set to true and add the value to the truth value
-        Utility.addFirstElementAsNewClauseToFormula(clauses, false, truthValues);
-
-        // Unit propagate and keep note of the trail this time
-
-        // If there was a conflict, get the UIP and add the learned clause and change to the appropriate decision level
-            // Otherwise, if all literals have truth values return sat
-                // otherwise +1 to the decision level manually change another literal and unit prop again
-
-
-
-        // The trail is gonna be a stack storing (Literal, decision level, and clause that caused this)
-
-    }
+//    private static HashMap<Character, Boolean> cDCL(ArrayList<ArrayList<Character>> clauses){
+//
+//
+//        int decisionLevel = 0;
+//
+//        // First of all unitprop once
+//        UnitPropagation.unitPropagation(clauses);
+//        // Check that it is not unsat just straight off the bat
+//        if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
+//            return null; // UNSAT
+//        }
+//
+//        // If all clauses are unit clauses, the formula is SAT
+//        // Otherwise add element that is not a unit clause
+//
+//
+//
+//
+//        // Add that to the trail as the decision
+//
+//        // Unit propagate and keep note of the trail this time
+//
+//        // If there was a conflict, get the UIP and add the learned clause and change to the appropriate decision level
+//            // Otherwise, if all literals have truth values return sat
+//                // otherwise +1 to the decision level manually change another literal and unit prop again
+//
+//
+//
+//        // The trail is gonna be a stack storing (Literal, decision level, and clause that caused this)
+//
+//    }
 
     private static void cDCLUnitProp(ArrayList<ArrayList<Character>> clauses) {
         boolean formulaModified; // Track if the formula was modified
@@ -75,7 +81,7 @@ public class CDCL {
 
     public static void main(String[] args) {
 
-        String formula = "(AB)(Ac)(CD)(bde)(EfG)(bgh)(HI)(Hj)(iJk)(JL)(Kl)";
+        String formula = "(AB)(Ac)(CD)(bde)(EfG)(bgh)(HI)(Hj)(iJk)(JL)(Kl)(a)";
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
 
         // Print the array
