@@ -7,3 +7,4 @@ To do:
 
 - change addFirstElementNotAUnitClauseAsNewClauseToFormula back to normal and move to dpll
 - Change the deafult UnitPropogation to allow duplicates when removing elements of the opposite polarity
+- Look into unit prop breaking early if you remove last element in a clause

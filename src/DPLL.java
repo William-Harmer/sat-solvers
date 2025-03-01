@@ -25,11 +25,30 @@ public class DPLL {
 //        System.out.println("Recursing");
 
         // Create copies to preserve the original clause structure and truth table
-        ArrayList<ArrayList<Character>> clausesCopy = Utility.clauseCopy(clauses);
-        HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
+//        ArrayList<ArrayList<Character>> clausesCopy = Utility.clauseCopy(clauses);
+//        HashMap<Character, Boolean> truthTableCopy = deepCopyTruthTable(literalTruthValues);
 
-        return executeDPLL(Utility.addFirstElementNotAUnitClauseAsNewClauseToFormula(clauses, false), literalTruthValues)
-                || executeDPLL(Utility.addFirstElementNotAUnitClauseAsNewClauseToFormula(clausesCopy, true), truthTableCopy);
+        return executeDPLL(addFirstElementNotAUnitClauseAsNewClauseToFormula(clauses,false), literalTruthValues)
+                || executeDPLL(addFirstElementNotAUnitClauseAsNewClauseToFormula(clauses, true), literalTruthValues);
+    }
+
+    public static ArrayList<ArrayList<Character>> addFirstElementNotAUnitClauseAsNewClauseToFormula(
+            ArrayList<ArrayList<Character>> clauses, boolean useCaps) {
+
+        for (ArrayList<Character> clause : clauses) {
+            if (clause.size() > 1) { // Ensure it's not a unit clause
+                char firstLiteral = clause.get(0); // Get the first literal
+
+                ArrayList<Character> newClause = new ArrayList<>();
+                newClause.add(useCaps ? Character.toUpperCase(firstLiteral) : Character.toLowerCase(firstLiteral));
+
+                clauses.add(newClause); // Add it to the formula
+
+                return clauses;
+            }
+        }
+
+        return clauses; // If all clauses are unit clauses, return unchanged
     }
 
 

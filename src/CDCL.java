@@ -1,24 +1,51 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class CDCL {
 
-    private static HashMap<Character, Boolean> cDCL(ArrayList<CDCLClause> clauses){
+    // If unit propogation does nothing the decision level should not change
+    // The decision level increases when the solver makes a new decision by assigning a literal without unit propagation forcing it.
+
+    private static boolean cDCL(ArrayList<CDCLClause> clauses){
+        // Unit propagate once without making any decision
         int decisionLevel = 0;
-        while (true){ // Do this until something has returned
+        cDCLUnitProp(clauses, decisionLevel);
 
-            decisionLevel++;
-            // Unit prop
+        while (true){
+            // or if all clauses are unit clauses then return sat
+            boolean allUnitClauses = true;
 
+            for (CDCLClause clause : clauses) {
+                if (clause.clause.isEmpty()) {
+                    if (decisionLevel == 0) { // If there is an empty clause at decision level 0 return unsat
+                        return false;
+                    } else { // If empty clause but not at level 0
+                        // Find the UIP and the UIP cut from the UIP and from that the learned clause
+                        // Move back one decision level and add the learned clause
+                        // remember to break out of the for loop
+                    }
+                }
 
-            // If there is conflict, and it is decision level 0 then the whole formula is not sat
-                // Otherwise if the conflict is not at decision level 0
-                // Find the UIP and the UIP cut from the UIP and from that the learned clause
-                // Move back one decision level and add the learned clause
-                //
-            // If all clauses are unit clauses, the formula is SAT
-            // Otherwise add element that is not a unit clause
+                if (clause.clause.size() != 1) {
+                    allUnitClauses = false;
+                }
+            }
+
+            if (allUnitClauses) { // If all clauses are unit clauses
+                return true;
+            }
+
+            // Add element that is not a unit clause, increase decision level and unit prop
         }
+    }
+
+    private static void findLearnedClause(ArrayList<CDCLClause> clauses){
+        // Find the first UIP
+
+
+        // From that find the cut
+
+
+        // From that find the learned clause
     }
 
     private static void cDCLUnitProp(ArrayList<CDCLClause> clauses, int decisionLevel) {
@@ -82,7 +109,6 @@ public class CDCL {
     }
 
     public static void main(String[] args) {
-
         String formula = "(AB)(Ac)(CD)(bde)(EfG)(bgh)(HI)(Hj)(iJk)(JL)(Kl)(a)";
         ArrayList<CDCLClause> cDCLClauses = Utility.formulaToCDCLArrayList(formula);
         print(cDCLClauses);

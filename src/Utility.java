@@ -2,30 +2,6 @@ import java.util.ArrayList;
 
 public class Utility {
 
-    public static ArrayList<ArrayList<Character>> addFirstElementNotAUnitClauseAsNewClauseToFormula(
-            ArrayList<ArrayList<Character>> clauses, boolean useCaps) {
-
-        if (clauses.isEmpty()) {
-            return clauses; // No clauses exist, return as is.
-        }
-
-        for (ArrayList<Character> clause : clauses) {
-            if (clause.size() > 1) { // Ensure it's not a unit clause
-                char firstLiteral = clause.get(0); // Get the first literal
-
-                ArrayList<Character> newClause = new ArrayList<>();
-                newClause.add(useCaps ? Character.toUpperCase(firstLiteral) : Character.toLowerCase(firstLiteral));
-
-                clauses.add(newClause); // Add it to the formula
-
-                return clauses;
-            }
-        }
-
-        return clauses; // If all clauses are unit clauses, return unchanged
-    }
-
-
     public static char oppositePolarity(char literal) {
         if (Character.isUpperCase(literal)) {
             return Character.toLowerCase(literal);
