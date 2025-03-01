@@ -1,10 +1,10 @@
 
 
 400 literal places is good for brute forces it takes about 200 seconds
+I did change DPLL so that it doesnt make copies so keep an eye out if there are problems with that
 
 To do:
 - Figure out CDCL
 
-- change addFirstElementNotAUnitClauseAsNewClauseToFormula back to normal and move to dpll
 - Change the deafult UnitPropogation to allow duplicates when removing elements of the opposite polarity
 - Look into unit prop breaking early if you remove last element in a clause

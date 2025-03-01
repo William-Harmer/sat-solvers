@@ -32,7 +32,7 @@ public class DPLL {
                 || executeDPLL(addFirstElementNotAUnitClauseAsNewClauseToFormula(clauses, true), literalTruthValues);
     }
 
-    public static ArrayList<ArrayList<Character>> addFirstElementNotAUnitClauseAsNewClauseToFormula(
+    private static ArrayList<ArrayList<Character>> addFirstElementNotAUnitClauseAsNewClauseToFormula(
             ArrayList<ArrayList<Character>> clauses, boolean useCaps) {
 
         for (ArrayList<Character> clause : clauses) {

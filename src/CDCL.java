@@ -4,6 +4,11 @@ public class CDCL {
 
     // If unit propogation does nothing the decision level should not change
     // The decision level increases when the solver makes a new decision by assigning a literal without unit propagation forcing it.
+    // Remember the learned clause is the opposite polarity of the clause
+
+    // I haven't set that my decision node is a decision in the data structure, not sure if this will affect things, it shouldn't case it all links back I think.
+    // Remeber when finding first UIP to ignore caps
+
 
     private static boolean cDCL(ArrayList<CDCLClause> clauses){
         // Unit propagate once without making any decision
@@ -47,6 +52,38 @@ public class CDCL {
 
         // From that find the learned clause
     }
+
+    private static void addFirstElementNotAUnitClauseAsNewClauseToFormula(
+            ArrayList<CDCLClause> clauses, int decisionLevel, boolean useOppositePolarity) {
+
+        for (CDCLClause cdclClause : clauses) {
+            // Check if the clause is not a unit clause
+            if (cdclClause.clause.size() > 1) {
+                char firstLiteral = cdclClause.clause.getFirst(); // Get the first literal
+
+                // If useOppositePolarity is true, apply the opposite polarity to the first literal
+                if (useOppositePolarity) {
+                    firstLiteral = Utility.oppositePolarity(firstLiteral);
+                }
+
+                // Create the new clause with the modified first literal
+                ArrayList<Character> newClause = new ArrayList<>();
+                newClause.add(firstLiteral);  // No need for useCaps anymore
+
+                // Create a new CDCLClause object with the updated clause and current decision level
+                // Leave trailElements empty and set the decisionLevel
+                CDCLClause newCDCLClause = new CDCLClause(newClause, new ArrayList<>(), decisionLevel);
+
+                // Add the new CDCLClause to the clauses list
+                clauses.add(newCDCLClause);
+
+                // Return the updated clauses
+                return;
+            }
+        }
+    }
+
+
 
     private static void cDCLUnitProp(ArrayList<CDCLClause> clauses, int decisionLevel) {
         boolean formulaModified = true;
@@ -99,8 +136,6 @@ public class CDCL {
         }
     }
 
-
-
     private static void print(ArrayList<CDCLClause> clauses) {
         for (CDCLClause clause : clauses) {
             clause.print();
@@ -116,6 +151,9 @@ public class CDCL {
 
         int decisionLevel = 1;
         cDCLUnitProp(cDCLClauses,decisionLevel);
+        print(cDCLClauses);
+        addFirstElementNotAUnitClauseAsNewClauseToFormula(cDCLClauses,decisionLevel,false);
+        System.out.println();
         print(cDCLClauses);
     }
 }
