@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class CDCL {
 
@@ -23,7 +24,10 @@ public class CDCL {
                 if (clause.clause.isEmpty()) {
                     if (decisionLevel == 0) { // If there is an empty clause at decision level 0 return unsat
                         return false;
-                    } else { // If empty clause but not at level 0
+                    } else {
+                        findFirstUIP(clauses, clause, decisionLevel);
+
+                        // If empty clause but not at level 0
                         // Find the UIP and the UIP cut from the UIP and from that the learned clause
                         // Move back one decision level and add the learned clause
                         // remember to break out of the for loop
@@ -43,7 +47,26 @@ public class CDCL {
         }
     }
 
-    private static void findLearnedClause(ArrayList<CDCLClause> clauses){
+    private static Character findFirstUIP(ArrayList<CDCLClause> clauses, CDCLClause emptyClause, int decisionLevel){
+
+        // We have the empty clause already
+        // put all the characters from emptyClause.trailElements into the tree set
+        // Add each literal from trailElements into the TreeSet
+        TreeSet<Character> set = new TreeSet<>(emptyClause.trailElements);
+
+        while (set.size() > 1){
+            for (CDCLClause clause : clauses) {
+                if (clause.clause.size() == 1 && clause.clause.contains(Character.toLowerCase(set.last())) || clause.clause.contains(Character.toUpperCase(set.last())) && clause.level == decisionLevel) { // Check if the clause is a unit clause, contains the last element, and has the same decision level
+                    set.remove(set.last());
+                    set.addAll(clause.trailElements); // Add all the letters in trailElements to the set
+                    break;
+                }
+            }
+        }
+        return set.last();
+    }
+
+    private static void findLearnedClause(){
         // Find the first UIP
 
 
@@ -141,19 +164,30 @@ public class CDCL {
             clause.print();
             System.out.print(" ");
         }
+        System.out.println();
     }
 
     public static void main(String[] args) {
         String formula = "(AB)(Ac)(CD)(bde)(EfG)(bgh)(HI)(Hj)(iJk)(JL)(Kl)(a)";
         ArrayList<CDCLClause> cDCLClauses = Utility.formulaToCDCLArrayList(formula);
         print(cDCLClauses);
-        System.out.println();
 
         int decisionLevel = 1;
         cDCLUnitProp(cDCLClauses,decisionLevel);
         print(cDCLClauses);
-        addFirstElementNotAUnitClauseAsNewClauseToFormula(cDCLClauses,decisionLevel,false);
-        System.out.println();
+        addFirstElementNotAUnitClauseAsNewClauseToFormula(cDCLClauses,decisionLevel,true);
         print(cDCLClauses);
+        decisionLevel = 2;
+        cDCLUnitProp(cDCLClauses,decisionLevel);
+        print(cDCLClauses);
+
+        for (CDCLClause clause : cDCLClauses) {
+//            System.out.println(clause);
+            if (clause.clause.isEmpty()) {
+                Character x = findFirstUIP(cDCLClauses, clause, decisionLevel);
+                System.out.println(x);
+                break;
+            }
+        }
     }
 }
