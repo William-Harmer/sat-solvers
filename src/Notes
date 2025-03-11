@@ -8,3 +8,10 @@ To do:
 
 - Change the deafult UnitPropogation to allow duplicates when removing elements of the opposite polarity
 - Look into unit prop breaking early if you remove last element in a clause
+- Look at this for unit prop:
+    if (formulaModified) {
+        break; // Restart processing all unit clauses
+    }
+    I don' think you need this part.
+
+- I think finding the first UIP is correct, but im not sure if it works out the learned clauses properly

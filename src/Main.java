@@ -38,6 +38,7 @@ public class Main {
                     System.out.println("\n" + "Processing formula ID: " + id);
                     System.out.println("Formula: " + formula);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
+                    ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
 
                     System.out.println("2D arraylist: " + clauses);
 
@@ -63,22 +64,25 @@ public class Main {
                     // PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing PLEAndBF");
-//                    System.out.println(clauses);
                     runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndPLEAndBF");
-//                    System.out.println(clauses);
                     runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // DPLL
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing DPLL");
-//                    System.out.println(clauses);
                     runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula);
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    // CDCL
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    System.out.println("Performing CDCL");
+                    runCDCLSolver(CDCLClauses, writer, id, formula);
 
                     id++;
                 }
@@ -92,7 +96,6 @@ public class Main {
 
     // Method that handles Brute Force and UP + PLE + BF logic
     private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula) {
-//        System.out.println("At the start " + clauses);
         Runtime runtime = Runtime.getRuntime();
         runtime.gc(); // Garbage collection for accurate memory measurement
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -101,9 +104,6 @@ public class Main {
         // Create an ExecutorService for handling time-limited computation
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashMap<Character, Boolean>> solverTask = null;
-
-
-//        System.out.println(clauses);
 
         if (solverType == SolverType.BruteForceEarlyStopping) {
             solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
@@ -159,7 +159,6 @@ public class Main {
         }
 
         executor.shutdown();
-//        System.out.println("At the end:" + clauses);
     }
 
     // Brute Force Solver using HashSet<HashMap>
@@ -214,6 +213,61 @@ public class Main {
 
         try {
             writer.write(id + ",BruteForce," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        executor.shutdown();
+    }
+
+    // Method that handles CDCL solver
+    private static void runCDCLSolver(ArrayList<CDCLClause> CDCLClauses, BufferedWriter writer, int id, String formula) {
+        Runtime runtime = Runtime.getRuntime();
+        runtime.gc(); // Garbage collection for accurate memory measurement
+        long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
+        long startTime = System.nanoTime();
+
+        // Create an ExecutorService for handling time-limited computation
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Callable<HashMap<Character, Boolean>> cdclTask = () -> CDCL.cDCL(CDCLClauses);
+        Future<HashMap<Character, Boolean>> future = executor.submit(cdclTask);
+
+        HashMap<Character, Boolean> assignment = null;
+        boolean timedout = false;
+
+        try {
+            assignment = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            System.out.println("Solver timed out after " + TIMEOUT_SECONDS + " seconds.");
+            timedout = true;
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        long endTime = System.nanoTime();
+        long memoryAfter = runtime.totalMemory() - runtime.freeMemory();
+
+        double elapsedTime = (endTime - startTime) / 1_000_000_000.0;
+        double memoryUsed = (memoryAfter - memoryBefore) / (1024.0 * 1024.0);
+
+        String formattedTime = String.format("%.16f", elapsedTime);
+        String formattedMemory = String.format("%.16f", memoryUsed);
+
+        String answer = "Satisfiable";
+        String truthValues = "None";
+
+        if (timedout) {
+            answer = "Not finished";
+        } else if (assignment == null || assignment.isEmpty()) {
+            answer = "Unsatisfiable";
+        } else {
+            truthValues = assignment.toString();
+        }
+
+        try {
+            writer.write(id + ",CDCL," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();

@@ -12,7 +12,13 @@ import java.util.ArrayList;
         this.level = level;
     }
 
-    public void print() {
+     public CDCLClause(CDCLClause other) {
+         this.clause = new ArrayList<>(other.clause);  // Deep copy the clause list
+         this.trailElements = new ArrayList<>(other.trailElements);  // Deep copy the trailElements list
+         this.level = other.level;
+     }
+
+     public void print() {
         System.out.print("([");
         for (int i = 0; i < clause.size(); i++) {
             System.out.print(clause.get(i));
