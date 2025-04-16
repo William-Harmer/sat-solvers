@@ -7,13 +7,13 @@ public class Main {
     private static final int TIMEOUT_MS = 500;
 
     public static void main(String[] args) {
-        String fileName = "datasets+results" + File.separator + "50_1_1000000_50_50.txt";
+        String fileName = "datasets+results" + File.separator + "5_1_100_50_50.txt";
         String outputFileName = "datasets+results" + File.separator + new File(fileName).getName().replace(".txt", ".csv");
 
         // Create a BufferedWriter to write to the CSV file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
             // Write header to the CSV file
-            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Execution Time (ms),Memory Used (MB)\n");
+            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (ms),Memory Used (MB)\n");
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             // WARMUP
@@ -35,8 +35,25 @@ public class Main {
                         continue;
                     }
 
+                    // Split the formula to get the number of literals and the formula itself
+
+                    // Split the formula from the number after '!'
+                    String[] parts = formula.split("!");  // Splits the formula and the number part
+                    formula = parts[0].trim(); // The formula part
+                    int formulaNumber = 0; // Default number if not found
+
+                    if (parts.length > 1) {
+                        try {
+                            formulaNumber = Integer.parseInt(parts[1].trim()); // Parse the number after '!'
+                        } catch (NumberFormatException e) {
+                            System.out.println("Error parsing the number after '!': " + parts[1]);
+                            continue; // Skip this line if the number is not valid
+                        }
+                    }
+
                     System.out.println("\n" + "Processing formula ID: " + id);
-//                    System.out.println("Formula: " + formula);
+                    System.out.println("Formula: " + formula);
+                    System.out.println("Number of literals:" + formulaNumber);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
                     ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
 //
@@ -49,43 +66,43 @@ public class Main {
                     // BRUTE FORCE
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing BruteForce");
-                    runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula);
+                    runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // BRUTE FORCE EARLY STOPPING
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing BruteForceEarlyStopping");
-                    runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula);
+                    runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndBF");
-                    runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula);
+                    runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing PLEAndBF");
-                    runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
+                    runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // UP + PLE + BF
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing UPAndPLEAndBF");
-                    runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula);
+                    runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // DPLL
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing DPLL");
-                    runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula);
+                    runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // CDCL
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     System.out.println("Performing CDCL");
-                    runCDCLSolver(CDCLClauses, writer, id, formula);
+                    runCDCLSolver(CDCLClauses, writer, id, formula, formulaNumber);
 
                     id++;
                 }
@@ -98,7 +115,7 @@ public class Main {
     }
 
     // Method that handles Brute Force and UP + PLE + BF logic
-    private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula) {
+    private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc(); // Garbage collection for accurate memory measurement
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -155,7 +172,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + "," + solverType + "," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + "," + solverType + "," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -165,7 +182,7 @@ public class Main {
     }
 
     // Brute Force Solver using HashSet<HashMap>
-    private static void runBruteForceSolver(ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula) {
+    private static void runBruteForceSolver(ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc(); // Garbage collection for accurate memory measurement
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -215,7 +232,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",BruteForce," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",BruteForce," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -225,7 +242,7 @@ public class Main {
     }
 
     // Method that handles CDCL solver
-    private static void runCDCLSolver(ArrayList<CDCLClause> CDCLClauses, BufferedWriter writer, int id, String formula) {
+    private static void runCDCLSolver(ArrayList<CDCLClause> CDCLClauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
         runtime.gc(); // Garbage collection for accurate memory measurement
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -270,7 +287,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",CDCL," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",CDCL," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
