@@ -4,16 +4,16 @@ import java.util.concurrent.*;
 
 public class Main {
 
-    private static final int TIMEOUT_SECONDS = 120;
+    private static final int TIMEOUT_MS = 500;
 
     public static void main(String[] args) {
-        String fileName = "datasets" + File.separator + "100_1_50_35_50.txt";
-        String outputFileName = "results.csv";
+        String fileName = "datasets+results" + File.separator + "50_1_1000000_50_50.txt";
+        String outputFileName = "datasets+results" + File.separator + new File(fileName).getName().replace(".txt", ".csv");
 
         // Create a BufferedWriter to write to the CSV file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
             // Write header to the CSV file
-            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Execution Time (seconds),Memory Used (MB)\n");
+            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Execution Time (ms),Memory Used (MB)\n");
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             // WARMUP
@@ -22,7 +22,7 @@ public class Main {
             ArrayList<ArrayList<Character>> warmupClauses = Utility.formulaTo2DArrayList("(A)");
             BruteForce.bruteForce(warmupClauses); // Warm-up for brute force solver
             Runtime.getRuntime().gc(); // Run garbage collection
-            System.out.println("Warm-up complete. Starting actual formulas...\n");
+            System.out.println("Warm-up complete. Starting actual formulas...");
 
             // Create a BufferedReader to read the file
             try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
@@ -36,11 +36,14 @@ public class Main {
                     }
 
                     System.out.println("\n" + "Processing formula ID: " + id);
-                    System.out.println("Formula: " + formula);
+//                    System.out.println("Formula: " + formula);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
                     ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
-
-                    System.out.println("2D arraylist: " + clauses);
+//
+//                    System.out.println("2D arraylist: " + clauses);
+//                    System.out.print("CDCL arraylist: ");
+//                    CDCL.print(CDCLClauses);
+//                    System.out.println();
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     // BRUTE FORCE
@@ -122,10 +125,10 @@ public class Main {
         boolean timedout = false;
 
         try {
-            assignment = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assignment = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_SECONDS + " seconds.");
+            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -152,7 +155,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + "," + solverType + "," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + "," + solverType + "," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,10 +180,10 @@ public class Main {
         boolean timedout = false;
 
         try {
-            allSatAssignments = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            allSatAssignments = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_SECONDS + " seconds.");
+            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -212,7 +215,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",BruteForce," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",BruteForce," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -237,10 +240,10 @@ public class Main {
         boolean timedout = false;
 
         try {
-            assignment = future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assignment = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_SECONDS + " seconds.");
+            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -267,7 +270,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",CDCL," + formula + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",CDCL," + "test" + "," + answer + ",\"" + truthValues + "\"," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();

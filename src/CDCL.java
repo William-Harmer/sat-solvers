@@ -13,9 +13,9 @@ public class CDCL {
         // Create a stack that holds the formula at each decision level
         Stack<ArrayList<CDCLClause>> formulaStack = new Stack<>();
         int decisionLevel = 0;
-        System.out.println("The formula as it is being added in the stack:");
-        print(formula);
-        System.out.println();
+//        System.out.println("The formula as it is being added in the stack:");
+//        print(formula);
+//        System.out.println();
         ArrayList<CDCLClause> copiedFormula2 = deepCopyFormula(formula);
         formulaStack.push(copiedFormula2);
 
@@ -23,8 +23,8 @@ public class CDCL {
             // Unit prop the formula
             cDCLUnitProp(formula,decisionLevel);
 
-            System.out.println("The formula after unit prop:");
-            print(formula);
+//            System.out.println("The formula after unit prop:");
+//            print(formula);
 
             // Check for sat / unsat
             boolean allUnitClauses = true;
@@ -34,73 +34,73 @@ public class CDCL {
                 }
                 if (clause.clause.isEmpty()) {
                     if (decisionLevel == 0) {
-                        System.out.println("UNSAT");
+//                        System.out.println("UNSAT");
                         // return an empty hashmap
                         return new HashMap<>();
                     } else {
-                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        System.out.println("Going to have to learn a new clause");
+//                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//                        System.out.println("Going to have to learn a new clause");
 
                         // Get the learned clause
                         CDCLClause learnedClause = getLearnedClause(formula, clause, decisionLevel);
 
-                        System.out.println("The learned clause is ");
-                        learnedClause.print();
-                        System.out.println();
+//                        System.out.println("The learned clause is ");
+//                        learnedClause.print();
+//                        System.out.println();
 
-                        System.out.println("Going to now backtrack the stack ");
-                        System.out.println("--------------------------");
-                        System.out.println("Before Stack:");
-                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-                            print(stackItem);
-                        }
-                        System.out.println("--------------------------");
+//                        System.out.println("Going to now backtrack the stack ");
+//                        System.out.println("--------------------------");
+//                        System.out.println("Before Stack:");
+//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
+//                            print(stackItem);
+//                        }
+//                        System.out.println("--------------------------");
 
                         // Backtrack to that learned clauses formula on the stack
                         while(formulaStack.size() > learnedClause.level+1){
                             formulaStack.pop();
                         }
 
-                        System.out.println("--------------------------");
-                        System.out.println("After Stack:");
-                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-                            print(stackItem);
-                        }
-                        System.out.println("--------------------------");
-
-                        System.out.println("Get the top item from the stack, set that as the formula and pop it");
+//                        System.out.println("--------------------------");
+//                        System.out.println("After Stack:");
+//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
+//                            print(stackItem);
+//                        }
+//                        System.out.println("--------------------------");
+//
+//                        System.out.println("Get the top item from the stack, set that as the formula and pop it");
 
                         // Now get the top item and set that as the formula
                         formula = formulaStack.pop();
-                        print(formula);
+//                        print(formula);
 
-                        System.out.println("--------------------------");
-                        System.out.println("Stack after formula is taken and popped");
-                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-                            print(stackItem);
-                        }
-                        System.out.println("--------------------------");
-
-                        System.out.println("Add learned clause onto end");
+//                        System.out.println("--------------------------");
+//                        System.out.println("Stack after formula is taken and popped");
+//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
+//                            print(stackItem);
+//                        }
+//                        System.out.println("--------------------------");
+//
+//                        System.out.println("Add learned clause onto end");
                         // Add the learned clause to the end
                         formula.add(learnedClause);
-                        print(formula);
+//                        print(formula);
 
-                        System.out.println("Put back onto stack with the new learned clause");
+//                        System.out.println("Put back onto stack with the new learned clause");
                         // Add that back onto the stack
                         formulaStack.push(deepCopyFormula(formula));
-                        System.out.println("--------------------------");
-                        System.out.println("Stack after added back on with learned clause");
-                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-                            print(stackItem);
-                        }
-                        System.out.println("--------------------------");
+//                        System.out.println("--------------------------");
+//                        System.out.println("Stack after added back on with learned clause");
+//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
+//                            print(stackItem);
+//                        }
+//                        System.out.println("--------------------------");
                         // Change the decision level
                         decisionLevel = learnedClause.level; // Decision level meant to be learnedClause.level+1??????
-                        System.out.println("Decision level is now "+ decisionLevel);
-                        System.out.println("End of learning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        System.out.println("iteration++");
-                        System.out.println();
+//                        System.out.println("Decision level is now "+ decisionLevel);
+//                        System.out.println("End of learning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+//                        System.out.println("iteration++");
+//                        System.out.println();
 
                         // Go through the while loop again
                         continue outerLoop;
@@ -109,7 +109,7 @@ public class CDCL {
             }
 
             if (allUnitClauses) {
-                System.out.println("SAT");
+//                System.out.println("SAT");
                 HashMap<Character, Boolean> answer = new HashMap<>();
                 for(CDCLClause clause : formula){ // for each clause in the formula
                     if (Character.isLowerCase(clause.clause.getFirst())) {
@@ -122,9 +122,9 @@ public class CDCL {
             }
 
 
-            System.out.println("No conflict, decision being made");
-            System.out.println("Formula before decision");
-            print(formula);
+//            System.out.println("No conflict, decision being made");
+//            System.out.println("Formula before decision");
+//            print(formula);
 
             // If neither then add the clause to the stack and make a decision
 
@@ -141,18 +141,18 @@ public class CDCL {
             addFirstElementNotAUnitClauseAsNewClauseToFormula(formula,decisionLevel,false);
 
             // Print out the stack for debugging
-            System.out.println("--------------------------");
-            System.out.println("Current Stack:");
-            for (ArrayList<CDCLClause> stackItem : formulaStack) {
-                print(stackItem);
-            }
-            System.out.println("--------------------------");
+//            System.out.println("--------------------------");
+//            System.out.println("Current Stack:");
+//            for (ArrayList<CDCLClause> stackItem : formulaStack) {
+//                print(stackItem);
+//            }
+//            System.out.println("--------------------------");
 
 
-            System.out.println("Formula after decision");
-            print(formula);
-            System.out.println("Iteration ++ with decision level now set as: " + decisionLevel);
-            System.out.println();
+//            System.out.println("Formula after decision");
+//            print(formula);
+//            System.out.println("Iteration ++ with decision level now set as: " + decisionLevel);
+//            System.out.println();
 
         }
     }
@@ -168,7 +168,7 @@ public class CDCL {
 
 
     private static Character findFirstUIP(ArrayList<CDCLClause> formula, CDCLClause emptyClause, int decisionLevel){
-        System.out.println("Decision level: " + decisionLevel);
+//        System.out.println("Decision level: " + decisionLevel);
         // Will this go all the way back to the decision or will it give me an error in that case?
 
         // We have the empty clause already
@@ -176,17 +176,17 @@ public class CDCL {
         // Add each literal from trailElements into the TreeSet
         TreeSet<Character> set = new TreeSet<>(Comparator.comparingInt(Character::toLowerCase));
         set.addAll(emptyClause.trailElements);
-        System.out.println("Finding UIP:");
-        System.out.println("Starting set : "+ set);
+//        System.out.println("Finding UIP:");
+//        System.out.println("Starting set : "+ set);
 
         while (set.size() > 1){
             for (CDCLClause clause : formula) {
                 if (clause.clause.size() == 1 && (clause.clause.contains(Character.toLowerCase(set.last())) || clause.clause.contains(Character.toUpperCase(set.last()))) && clause.level == decisionLevel) { // Check if the clause is a unit clause, contains the last element, and has the same decision level
-                    System.out.println(set.last() + " connected to...");
+//                    System.out.println(set.last() + " connected to...");
                     set.remove(set.last());
-                    System.out.println(clause.trailElements);
+//                    System.out.println(clause.trailElements);
                     set.addAll(clause.trailElements); // Add all the letters in trailElements to the set
-                    System.out.println(set);
+//                    System.out.println(set);
                     break;
                 }
             }
@@ -197,10 +197,10 @@ public class CDCL {
     private static CDCLClause getLearnedClause(ArrayList<CDCLClause> formula, CDCLClause emptyClause, int decisionLevel) {
         // Find the first UIP (Unique Implication Point)
         Character firstUIP = findFirstUIP(formula, emptyClause, decisionLevel);
-        System.out.println("First UIP: " + firstUIP);
-
-        System.out.println("The formula after finding the first UIP (Should not change):");
-        print(formula);
+//        System.out.println("First UIP: " + firstUIP);
+//
+//        System.out.println("The formula after finding the first UIP (Should not change):");
+//        print(formula);
 
         // Find the earliest decision node (lowest decision level > 0)
         CDCLClause startNode = null;
@@ -212,10 +212,10 @@ public class CDCL {
                 }
             }
         }
-        System.out.println();
-        System.out.println("Start node is: ");
-        startNode.print();
-        System.out.println();
+//        System.out.println();
+//        System.out.println("Start node is: ");
+//        startNode.print();
+//        System.out.println();
 
 //        System.out.println("Earliest decision node:");
 //        startNode.print();
@@ -227,17 +227,17 @@ public class CDCL {
         // Use HashSet to store learned clause literals while ensuring uniqueness
         HashSet<Character> learnedSet = new HashSet<>();
 
-        System.out.println();
-        System.out.println("Now we are getting the learned clause: ");
+//        System.out.println();
+//        System.out.println("Now we are getting the learned clause: ");
 
         // Add the first literal of the startNode to the set
         set.add(startNode.clause.getFirst());
-        System.out.println("Set start: ");
-        System.out.println(set);
+//        System.out.println("Set start: ");
+//        System.out.println(set);
 
         whileLoop:
             while (Character.toLowerCase(set.first()) <= Character.toLowerCase(firstUIP)) {
-                System.out.println("All elements in the set are not greater than the UIP SO we must go forward");
+//                System.out.println("All elements in the set are not greater than the UIP SO we must go forward");
                 char smallest = set.first(); // Get the smallest element (ignoring case)
 
 
@@ -247,7 +247,7 @@ public class CDCL {
                     // Check if the clause is a unit clause and contains the smallest element
                     if (clause.clause.size() == 1 &&
                             (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))) {
-                        System.out.println("Found a clause that contains element " + smallest);
+//                        System.out.println("Found a clause that contains element " + smallest);
 
                         char unitLiteral = clause.clause.getFirst(); // Get the only literal in the unit clause
 
@@ -260,7 +260,7 @@ public class CDCL {
                         set.add(unitLiteral);
                     } else if (clause.clause.isEmpty() &&
                             (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))){ // Start node is directly hitting the conflict
-                        System.out.println("Start node is directly hitting conflict");
+//                        System.out.println("Start node is directly hitting conflict");
 
                         learnedSet.add(Utility.oppositePolarity(smallest));
 
@@ -340,7 +340,7 @@ public class CDCL {
 
         // Keep processing until no more modifications are made
         while (formulaModified) {
-            print(clauses);
+//            print(clauses);
             formulaModified = false;
 
             // Iterate through the clauses
