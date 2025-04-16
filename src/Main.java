@@ -4,16 +4,16 @@ import java.util.concurrent.*;
 
 public class Main {
 
-    private static final int TIMEOUT_MS = 500;
+    private static final int TIMEOUT_MS = 200;
 
     public static void main(String[] args) {
-        String fileName = "datasets+results" + File.separator + "5_1_100_50_50.txt";
+        String fileName = "datasets+results" + File.separator + "5_100000_100000_50_50.txt";
         String outputFileName = "datasets+results" + File.separator + new File(fileName).getName().replace(".txt", ".csv");
 
         // Create a BufferedWriter to write to the CSV file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
             // Write header to the CSV file
-            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (ms),Memory Used (MB)\n");
+            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (Seconds),Memory Used (MB)\n");
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             // WARMUP
@@ -52,7 +52,7 @@ public class Main {
                     }
 
                     System.out.println("\n" + "Processing formula ID: " + id);
-                    System.out.println("Formula: " + formula);
+//                    System.out.println("Formula: " + formula);
                     System.out.println("Number of literals:" + formulaNumber);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
                     ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
@@ -172,7 +172,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + "," + solverType + "," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + "," + solverType + "," + "" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + "," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -232,7 +232,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",BruteForce," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",BruteForce," + "" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + "," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
@@ -287,7 +287,7 @@ public class Main {
         }
 
         try {
-            writer.write(id + ",CDCL," + "test" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + formattedTime + "," + formattedMemory + "\n");
+            writer.write(id + ",CDCL," + "" + "," + answer + ",\"" + truthValues + "\"," + formulaNumber + "," + formattedTime + "," + formattedMemory + "\n");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();
