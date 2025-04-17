@@ -4,105 +4,96 @@ import java.util.concurrent.*;
 
 public class Main {
 
-    private static final int TIMEOUT_MS = 200;
+    private static final int TIMEOUT_MS = 10;
+    private static final boolean ENABLE_TIMEOUT_TRACKING = true;
+    private static final int MAX_TIMEOUTS_PER_SOLVER = 10;
+    private static final Map<String, Integer> consecutiveTimeoutCounters = new HashMap<>();
 
     public static void main(String[] args) {
-        String fileName = "datasets+results" + File.separator + "5_100000_100000_50_50.txt";
+        String fileName = "datasets+results" + File.separator + "40002_1_20001_50_50.txt";
         String outputFileName = "datasets+results" + File.separator + new File(fileName).getName().replace(".txt", ".csv");
 
-        // Create a BufferedWriter to write to the CSV file
+        for (SolverType type : SolverType.values()) {
+            consecutiveTimeoutCounters.put(type.name(), 0);
+        }
+        consecutiveTimeoutCounters.put("BruteForce", 0);
+        consecutiveTimeoutCounters.put("CDCL", 0);
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
-            // Write header to the CSV file
             writer.write("ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (Seconds),Memory Used (MB)\n");
 
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // WARMUP
-            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             System.out.println("Warming up JVM...");
             ArrayList<ArrayList<Character>> warmupClauses = Utility.formulaTo2DArrayList("(A)");
-            BruteForce.bruteForce(warmupClauses); // Warm-up for brute force solver
-            Runtime.getRuntime().gc(); // Run garbage collection
+            BruteForce.bruteForce(warmupClauses);
+            Runtime.getRuntime().gc();
             System.out.println("Warm-up complete. Starting actual formulas...");
 
-            // Create a BufferedReader to read the file
             try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
                 String formula;
-                int id = 1;  // Start ID from 1
+                int id = 1;
 
-                // Iterate through each line of the file
                 while ((formula = reader.readLine()) != null) {
                     if (formula.trim().isEmpty() || formula.trim().startsWith("//")) {
                         continue;
                     }
 
-                    // Split the formula to get the number of literals and the formula itself
-
-                    // Split the formula from the number after '!'
-                    String[] parts = formula.split("!");  // Splits the formula and the number part
-                    formula = parts[0].trim(); // The formula part
-                    int formulaNumber = 0; // Default number if not found
+                    String[] parts = formula.split("!");
+                    formula = parts[0].trim();
+                    int formulaNumber = 0;
 
                     if (parts.length > 1) {
                         try {
-                            formulaNumber = Integer.parseInt(parts[1].trim()); // Parse the number after '!'
+                            formulaNumber = Integer.parseInt(parts[1].trim());
                         } catch (NumberFormatException e) {
                             System.out.println("Error parsing the number after '!': " + parts[1]);
-                            continue; // Skip this line if the number is not valid
+                            continue;
                         }
                     }
 
-                    System.out.println("\n" + "Processing formula ID: " + id);
-//                    System.out.println("Formula: " + formula);
+                    if (ENABLE_TIMEOUT_TRACKING && allSolversTimedOut()) {
+                        System.out.println("All solvers have reached the timeout limit. Exiting.");
+                        break;
+                    }
+
+                    System.out.println("\nProcessing formula ID: " + id);
                     System.out.println("Number of literals:" + formulaNumber);
                     ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
                     ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
-//
-//                    System.out.println("2D arraylist: " + clauses);
-//                    System.out.print("CDCL arraylist: ");
-//                    CDCL.print(CDCLClauses);
-//                    System.out.println();
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // BRUTE FORCE
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing BruteForce");
-                    runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver("BruteForce")) {
+                        System.out.println("Performing BruteForce");
+                        runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // BRUTE FORCE EARLY STOPPING
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing BruteForceEarlyStopping");
-                    runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver(SolverType.BruteForceEarlyStopping.name())) {
+                        System.out.println("Performing BruteForceEarlyStopping");
+                        runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // UP + BF
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing UPAndBF");
-                    runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver(SolverType.UPAndBF.name())) {
+                        System.out.println("Performing UPAndBF");
+                        runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // PLE + BF
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing PLEAndBF");
-                    runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver(SolverType.PLEAndBF.name())) {
+                        System.out.println("Performing PLEAndBF");
+                        runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // UP + PLE + BF
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing UPAndPLEAndBF");
-                    runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver(SolverType.UPAndPLEAndBF.name())) {
+                        System.out.println("Performing UPAndPLEAndBF");
+                        runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // DPLL
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing DPLL");
-                    runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver(SolverType.DPLL.name())) {
+                        System.out.println("Performing DPLL");
+                        runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                    }
 
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    // CDCL
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    System.out.println("Performing CDCL");
-                    runCDCLSolver(CDCLClauses, writer, id, formula, formulaNumber);
+                    if (!shouldSkipSolver("CDCL")) {
+                        System.out.println("Performing CDCL");
+                        runCDCLSolver(CDCLClauses, writer, id, formula, formulaNumber);
+                    }
 
                     id++;
                 }
@@ -114,27 +105,34 @@ public class Main {
         }
     }
 
-    // Method that handles Brute Force and UP + PLE + BF logic
+    private static boolean shouldSkipSolver(String solverName) {
+        return ENABLE_TIMEOUT_TRACKING && consecutiveTimeoutCounters.getOrDefault(solverName, 0) >= MAX_TIMEOUTS_PER_SOLVER;
+    }
+
+    private static boolean allSolversTimedOut() {
+        for (int count : consecutiveTimeoutCounters.values()) {
+            if (count < MAX_TIMEOUTS_PER_SOLVER) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
-        runtime.gc(); // Garbage collection for accurate memory measurement
+        runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
         long startTime = System.nanoTime();
 
-        // Create an ExecutorService for handling time-limited computation
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashMap<Character, Boolean>> solverTask = null;
 
-        if (solverType == SolverType.BruteForceEarlyStopping) {
-            solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
-        } else if(solverType == SolverType.UPAndBF) {
-            solverTask = () -> UPAndBF.uPAndBF(clauses);
-        } else if (solverType == SolverType.PLEAndBF) {
-            solverTask = () -> PLEAndBF.pLEAAndBF(clauses);
-        } else if (solverType == SolverType.UPAndPLEAndBF) {
-            solverTask = () -> UPAndPLEAndBF.uPAndPLEAndBF(clauses);
-        } else if (solverType == SolverType.DPLL) {
-            solverTask = () -> DPLL.dPLL(clauses);
+        switch (solverType) {
+            case BruteForceEarlyStopping -> solverTask = () -> BruteForce.bruteForceEarlyStopping(clauses);
+            case UPAndBF -> solverTask = () -> UPAndBF.uPAndBF(clauses);
+            case PLEAndBF -> solverTask = () -> PLEAndBF.pLEAAndBF(clauses);
+            case UPAndPLEAndBF -> solverTask = () -> UPAndPLEAndBF.uPAndPLEAndBF(clauses);
+            case DPLL -> solverTask = () -> DPLL.dPLL(clauses);
         }
 
         Future<HashMap<Character, Boolean>> future = executor.submit(solverTask);
@@ -159,16 +157,21 @@ public class Main {
 
         String formattedTime = String.format("%.16f", elapsedTime);
         String formattedMemory = String.format("%.16f", memoryUsed);
-
         String answer = "Satisfiable";
         String truthValues = "None";
 
         if (timedout) {
             answer = "Not finished";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put(solverType.name(), consecutiveTimeoutCounters.get(solverType.name()) + 1);
         } else if (assignment == null || assignment.isEmpty()) {
             answer = "Unsatisfiable";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put(solverType.name(), 0);
         } else {
             truthValues = assignment.toString();
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put(solverType.name(), 0);
         }
 
         try {
@@ -181,14 +184,12 @@ public class Main {
         executor.shutdown();
     }
 
-    // Brute Force Solver using HashSet<HashMap>
     private static void runBruteForceSolver(ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
-        runtime.gc(); // Garbage collection for accurate memory measurement
+        runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
         long startTime = System.nanoTime();
 
-        // Create an ExecutorService for handling time-limited computation
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashSet<HashMap<Character, Boolean>>> bruteForceTask = () -> BruteForce.bruteForce(clauses);
         Future<HashSet<HashMap<Character, Boolean>>> future = executor.submit(bruteForceTask);
@@ -214,21 +215,25 @@ public class Main {
 
         String formattedTime = String.format("%.16f", elapsedTime);
         String formattedMemory = String.format("%.16f", memoryUsed);
-
         String answer = "Satisfiable";
         String truthValues = "None";
 
         if (timedout) {
             answer = "Not finished";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("BruteForce", consecutiveTimeoutCounters.get("BruteForce") + 1);
         } else if (allSatAssignments == null || allSatAssignments.isEmpty()) {
             answer = "Unsatisfiable";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("BruteForce", 0);
         } else {
             HashMap<Character, Boolean> firstAssignment = allSatAssignments.iterator().next();
             truthValues = firstAssignment.toString();
-
             if (allSatAssignments.size() > 1) {
                 truthValues += " plus " + (allSatAssignments.size() - 1) + " more";
             }
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("BruteForce", 0);
         }
 
         try {
@@ -241,14 +246,12 @@ public class Main {
         executor.shutdown();
     }
 
-    // Method that handles CDCL solver
     private static void runCDCLSolver(ArrayList<CDCLClause> CDCLClauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
         Runtime runtime = Runtime.getRuntime();
-        runtime.gc(); // Garbage collection for accurate memory measurement
+        runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
         long startTime = System.nanoTime();
 
-        // Create an ExecutorService for handling time-limited computation
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Callable<HashMap<Character, Boolean>> cdclTask = () -> CDCL.cDCL(CDCLClauses);
         Future<HashMap<Character, Boolean>> future = executor.submit(cdclTask);
@@ -274,16 +277,21 @@ public class Main {
 
         String formattedTime = String.format("%.16f", elapsedTime);
         String formattedMemory = String.format("%.16f", memoryUsed);
-
         String answer = "Satisfiable";
         String truthValues = "None";
 
         if (timedout) {
             answer = "Not finished";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("CDCL", consecutiveTimeoutCounters.get("CDCL") + 1);
         } else if (assignment == null || assignment.isEmpty()) {
             answer = "Unsatisfiable";
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("CDCL", 0);
         } else {
             truthValues = assignment.toString();
+            if (ENABLE_TIMEOUT_TRACKING)
+                consecutiveTimeoutCounters.put("CDCL", 0);
         }
 
         try {
@@ -296,7 +304,6 @@ public class Main {
         executor.shutdown();
     }
 
-    // Enum for Solver Types to distinguish different solving methods
     private enum SolverType {
         BruteForceEarlyStopping,
         UPAndBF,
