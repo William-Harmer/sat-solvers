@@ -364,7 +364,9 @@ public class CDCL {
                         if (containsUnit) { // Clause contains the same polarity unit clause
                             clauses.remove(i); // Remove the clause altogether
                             i--; // Adjust index to account for removal
-                            j--; // Adjust to revisit the current clause
+                            if (i < j) {
+                                j--;
+                            } // Adjust to revisit the current clause
                             formulaModified = true;
 
                         } else if (containsOpposite) { // Clause contains the opposite polarity unit clause

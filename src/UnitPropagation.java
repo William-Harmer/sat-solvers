@@ -50,7 +50,8 @@ public class UnitPropagation {
 
     public static void main(String[] args) {
 
-        String formula = "(B)(c)(D)(e)(fG)(gh)(HI)(Hj)(iJk)(JL)(Kl)(a)(F)";
+        String formula = "(B) (c) (D) (e) (f G) (g h) (H I) (H j) (i J k) (J L) (K l) (a)";
+        // (A B) (A c) (C D) (b d e) (E f G) (b g h) (H I) (H j) (i J k) (J L) (K l)
         ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
 
         // Print the array

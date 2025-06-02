@@ -4,104 +4,149 @@ import java.util.concurrent.*;
 
 public class Main {
 
-    private static final int TIMEOUT_MS = 10;
+    // Per solver timeout.
+    private static final Map<String,Integer> TIMEOUT_MS_MAP = new HashMap<>();
+    static {
+        TIMEOUT_MS_MAP.put("BruteForce",                        1000);
+        TIMEOUT_MS_MAP.put(SolverType.BruteForceEarlyStopping.name(), 1000);
+        TIMEOUT_MS_MAP.put(SolverType.UPAndBF.name(),           1000);
+        TIMEOUT_MS_MAP.put(SolverType.PLEAndBF.name(),          1000);
+        TIMEOUT_MS_MAP.put(SolverType.UPAndPLEAndBF.name(),     1000);
+        TIMEOUT_MS_MAP.put(SolverType.DPLL.name(),              1000);
+        TIMEOUT_MS_MAP.put("CDCL",                              1000);
+    }
+    private static int getTimeout(String solverName) {
+        return TIMEOUT_MS_MAP.getOrDefault(solverName, 250);
+    }
+
     private static final boolean ENABLE_TIMEOUT_TRACKING = true;
     private static final int MAX_TIMEOUTS_PER_SOLVER = 10;
     private static final Map<String, Integer> consecutiveTimeoutCounters = new HashMap<>();
 
-    public static void main(String[] args) {
-        String fileName = "datasets+results" + File.separator + "40002_1_20001_50_50.txt";
-        String outputFileName = "datasets+results" + File.separator + new File(fileName).getName().replace(".txt", ".csv");
+    public static void main(String[] args) throws IOException {
 
+        String baseDir        = "C:\\Users\\willi\\OneDrive - University of East Anglia\\Demo";
+        String fileName       = baseDir + File.separator + "5000_1_5000_50_50.txt";
+
+        // ─── NEW OUTPUT DIRECTORY ───
+        String outputDir      = "C:\\Users\\willi\\OneDrive - University of East Anglia\\Demo";
+        String outputFileName = outputDir + File.separator
+                + new File(fileName).getName().replace(".txt", ".csv");
+
+
+        // ─── Initialize timeout counters ───
         for (SolverType type : SolverType.values()) {
             consecutiveTimeoutCounters.put(type.name(), 0);
         }
         consecutiveTimeoutCounters.put("BruteForce", 0);
         consecutiveTimeoutCounters.put("CDCL", 0);
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
-            writer.write("ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (Seconds),Memory Used (MB)\n");
+        // ─── 1) Figure out how far we got last time ───
+        File outFile = new File(outputFileName);
+        int lastProcessedId = 0;
+        if (outFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(outFile))) {
+                br.readLine();  // skip header
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] cols = line.split(",", 2);
+                    lastProcessedId = Math.max(lastProcessedId, Integer.parseInt(cols[0]));
+                }
+            }
+        }
 
-            System.out.println("Warming up JVM...");
-            ArrayList<ArrayList<Character>> warmupClauses = Utility.formulaTo2DArrayList("(A)");
-            BruteForce.bruteForce(warmupClauses);
-            Runtime.getRuntime().gc();
-            System.out.println("Warm-up complete. Starting actual formulas...");
+        // ─── 2) Open CSV in append mode & write header if new ───
+        boolean needsHeader = !outFile.exists();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outFile, /* append = */ true));
+        if (needsHeader) {
+            writer.write(
+                    "ID,Solver Type,Formula,Answer,Truth Values,Number of Literals,Execution Time (Seconds),Memory Used (MB)\n"
+            );
+            writer.flush();
+        }
+        // Make sure we close on SIGINT/kill:
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try { writer.close(); } catch (IOException ignored) {}
+        }));
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-                String formula;
-                int id = 1;
+        // ─── Warm-up ───
+        System.out.println("Warming up JVM...");
+        ArrayList<ArrayList<Character>> warmupClauses = Utility.formulaTo2DArrayList("(A)");
+        BruteForce.bruteForce(warmupClauses);
+        Runtime.getRuntime().gc();
+        System.out.println("Warm-up complete. Starting actual formulas...");
 
-                while ((formula = reader.readLine()) != null) {
-                    if (formula.trim().isEmpty() || formula.trim().startsWith("//")) {
+        // ─── 3) Read & process formulas, skipping already-done ───
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String formulaLine;
+            int id = 1;
+
+            // fast-forward past completed IDs
+            while (id <= lastProcessedId && (formulaLine = reader.readLine()) != null) {
+                if (formulaLine.isBlank() || formulaLine.trim().startsWith("//")) {
+                    continue;
+                }
+                id++;
+            }
+
+            // now resume from the next formula
+            while ((formulaLine = reader.readLine()) != null) {
+                if (formulaLine.isBlank() || formulaLine.trim().startsWith("//")) {
+                    continue;
+                }
+
+                // parse formula + optional “!number”
+                String[] parts = formulaLine.split("!");
+                String formula = parts[0].trim();
+                int formulaNumber = 0;
+                if (parts.length > 1) {
+                    try {
+                        formulaNumber = Integer.parseInt(parts[1].trim());
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error parsing formula number: " + parts[1]);
                         continue;
                     }
-
-                    String[] parts = formula.split("!");
-                    formula = parts[0].trim();
-                    int formulaNumber = 0;
-
-                    if (parts.length > 1) {
-                        try {
-                            formulaNumber = Integer.parseInt(parts[1].trim());
-                        } catch (NumberFormatException e) {
-                            System.out.println("Error parsing the number after '!': " + parts[1]);
-                            continue;
-                        }
-                    }
-
-                    if (ENABLE_TIMEOUT_TRACKING && allSolversTimedOut()) {
-                        System.out.println("All solvers have reached the timeout limit. Exiting.");
-                        break;
-                    }
-
-                    System.out.println("\nProcessing formula ID: " + id);
-                    System.out.println("Number of literals:" + formulaNumber);
-                    ArrayList<ArrayList<Character>> clauses = Utility.formulaTo2DArrayList(formula);
-                    ArrayList<CDCLClause> CDCLClauses = Utility.formulaToCDCLArrayList(formula);
-
-                    if (!shouldSkipSolver("BruteForce")) {
-                        System.out.println("Performing BruteForce");
-                        runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver(SolverType.BruteForceEarlyStopping.name())) {
-                        System.out.println("Performing BruteForceEarlyStopping");
-                        runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver(SolverType.UPAndBF.name())) {
-                        System.out.println("Performing UPAndBF");
-                        runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver(SolverType.PLEAndBF.name())) {
-                        System.out.println("Performing PLEAndBF");
-                        runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver(SolverType.UPAndPLEAndBF.name())) {
-                        System.out.println("Performing UPAndPLEAndBF");
-                        runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver(SolverType.DPLL.name())) {
-                        System.out.println("Performing DPLL");
-                        runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
-                    }
-
-                    if (!shouldSkipSolver("CDCL")) {
-                        System.out.println("Performing CDCL");
-                        runCDCLSolver(CDCLClauses, writer, id, formula, formulaNumber);
-                    }
-
-                    id++;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                if (ENABLE_TIMEOUT_TRACKING && allSolversTimedOut()) {
+                    System.out.println("All solvers have reached the timeout limit. Exiting.");
+                    break;
+                }
+
+                System.out.println("\nProcessing formula ID: " + id);
+                System.out.println("Number of literals: " + formulaNumber);
+
+                var clauses     = Utility.formulaTo2DArrayList(formula);
+                var cdclClauses = Utility.formulaToCDCLArrayList(formula);
+
+                // each of these methods does writer.write(...) + writer.flush()
+                if (!shouldSkipSolver("BruteForce")) {
+                    runBruteForceSolver(Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver(SolverType.BruteForceEarlyStopping.name())) {
+                    runSolver(SolverType.BruteForceEarlyStopping, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver(SolverType.UPAndBF.name())) {
+                    runSolver(SolverType.UPAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver(SolverType.PLEAndBF.name())) {
+                    runSolver(SolverType.PLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver(SolverType.UPAndPLEAndBF.name())) {
+                    runSolver(SolverType.UPAndPLEAndBF, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver(SolverType.DPLL.name())) {
+                    runSolver(SolverType.DPLL, Utility.clauseCopy(clauses), writer, id, formula, formulaNumber);
+                }
+                if (!shouldSkipSolver("CDCL")) {
+                    runCDCLSolver(cdclClauses, writer, id, formula, formulaNumber);
+                }
+
+                id++;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            // 4) Ensure the writer is closed on normal exit
+            writer.close();
         }
     }
 
@@ -119,6 +164,8 @@ public class Main {
     }
 
     private static void runSolver(SolverType solverType, ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
+        int timeout = getTimeout(solverType.name());
+
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -140,10 +187,12 @@ public class Main {
         boolean timedout = false;
 
         try {
-            assignment = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            assignment = future.get(timeout, TimeUnit.MILLISECONDS);
+
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
+            System.out.println(solverType + " timed out after " + timeout + " ms.");
+
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -185,6 +234,8 @@ public class Main {
     }
 
     private static void runBruteForceSolver(ArrayList<ArrayList<Character>> clauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
+        int timeout = getTimeout("BruteForce");
+
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -198,10 +249,10 @@ public class Main {
         boolean timedout = false;
 
         try {
-            allSatAssignments = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            allSatAssignments = future.get(timeout, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
+            System.out.println("BruteForce timed out after " + timeout + " ms.");
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
@@ -247,6 +298,8 @@ public class Main {
     }
 
     private static void runCDCLSolver(ArrayList<CDCLClause> CDCLClauses, BufferedWriter writer, int id, String formula, int formulaNumber) {
+        int timeout = getTimeout("CDCL");
+
         Runtime runtime = Runtime.getRuntime();
         runtime.gc();
         long memoryBefore = runtime.totalMemory() - runtime.freeMemory();
@@ -260,10 +313,11 @@ public class Main {
         boolean timedout = false;
 
         try {
-            assignment = future.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            assignment = future.get(timeout, TimeUnit.MILLISECONDS);
+
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Solver timed out after " + TIMEOUT_MS + " ms.");
+            System.out.println("CDCL timed out after " + timeout + " ms.");
             timedout = true;
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
