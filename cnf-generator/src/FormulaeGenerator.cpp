@@ -36,7 +36,7 @@ std::string generateFormula(
 
         // Append either OR ('v') or the start of a new AND ('^') group
         if (i + 1 < numLiterals) {
-            formula += (probDist(gen) <= FormulaeConfig::OR_TO_AND_PROBABILITY)
+            formula += (probDist(gen) <= FormulaeConfig::AND_TO_OR_PROBABILITY)
                            ? " v "
                            : ") ^ (";
         }
@@ -65,7 +65,7 @@ int main() {
             std::to_string(FormulaeConfig::MIN_LITERAL_PLACES) + "_" +
             std::to_string(FormulaeConfig::MAX_LITERAL_PLACES) + "_" +
             std::to_string(FormulaeConfig::NOT_PROBABILITY) + "_" +
-            std::to_string(FormulaeConfig::OR_TO_AND_PROBABILITY);
+            std::to_string(FormulaeConfig::AND_TO_OR_PROBABILITY);
 
         fs::path basePath = fs::path("..") / "Formulae";
         fs::create_directories(basePath);
@@ -84,8 +84,8 @@ int main() {
         outFile << "// Generated formulas: " << FormulaeConfig::NUM_UNIQUE_FORMULAS << "\n";
         outFile << "// Literal count range: " << FormulaeConfig::MIN_LITERAL_PLACES << "–"
                 << FormulaeConfig::MAX_LITERAL_PLACES << "\n";
-        outFile << "// NOT probability: " << FormulaeConfig::NOT_PROBABILITY << "%,  "
-                << "OR→AND probability: " << FormulaeConfig::OR_TO_AND_PROBABILITY << "%\n\n";
+        outFile << "// NOT probability: " << FormulaeConfig::NOT_PROBABILITY << "%, "
+                << "AND to OR probability: " << FormulaeConfig::AND_TO_OR_PROBABILITY << "%\n\n";
 
         // -------------------------------------------------------------------------
         // Setup random distributions and formula counts by group

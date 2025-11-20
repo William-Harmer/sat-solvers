@@ -31,7 +31,7 @@ constexpr int NOT_PROBABILITY = 50;
  * @brief Probability (in percent) that an operator between literals will be "v" (OR)
  * instead of generating a new bracketed "AND" segment.
  */
-constexpr int OR_TO_AND_PROBABILITY = 50;
+constexpr int AND_TO_OR_PROBABILITY = 50;
 
 /**
  * @brief Number of formulas generated between flushes to disk.
