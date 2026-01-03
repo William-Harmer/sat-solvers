@@ -67,7 +67,7 @@ int main() {
             std::to_string(FormulaeConfig::NOT_PROBABILITY) + "_" +
             std::to_string(FormulaeConfig::AND_TO_OR_PROBABILITY);
 
-        fs::path basePath = fs::path("..") / "Formulae";
+        fs::path basePath = fs::path("..") / "formulae";
         fs::create_directories(basePath);
 
         fs::path outputFile = basePath / (paramSuffix + ".txt");
