@@ -337,8 +337,6 @@ public class CDCL {
         }
     }
 
-
-
     private static void cDCLUnitProp(ArrayList<CDCLClause> clauses, int decisionLevel) {
         boolean formulaModified = true;
 
