@@ -83,7 +83,7 @@ public class BruteForce {
 
     public static void main(String[] args) throws IOException {
 
-        String formula = "(j) ^ (m v -c) ^ (e v h v j) ^ (k) ^ (d) ^ (a v i) ^ (l) ^ (d v -k) ^ (b) ^ (-k v -f) ^ (g)";
+        String formula = "(-o v -j) ^ (-f v l v l v t) ^ (-u) ^ (k) ^ (-q v n v -e v s) ^ (b v r) ^ (i) ^ (a v m) ^ (g v c) ^ (p) ^ (-d) ^ (w) ^ (h)";
         ArrayList<ArrayList<Character>> clauses = CNFParser.formulaTo2DArrayList(formula);
 
         // Brute force with early stopping

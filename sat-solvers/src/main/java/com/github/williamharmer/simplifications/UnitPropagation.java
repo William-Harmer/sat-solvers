@@ -55,7 +55,7 @@ public class UnitPropagation {
 
     public static void main(String[] args) {
 
-        String formula = "(A b) (b c)";
+        String formula = "(a c) (a b)";
         // (A B) (A c) (C D) (b d e) (E f G) (b g h) (H I) (H j) (i J k) (J L) (K l)
         ArrayList<ArrayList<Character>> clauses = CNFParser.formulaTo2DArrayList(formula);
 

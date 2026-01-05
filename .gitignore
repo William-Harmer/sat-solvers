@@ -5,6 +5,7 @@ cnf-generator/build/
 
 # sat-solvers
 sat-solvers\target
+sat-solvers\src\test
 
 # IDE
 .vscode
