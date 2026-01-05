@@ -1,4 +1,10 @@
+# cnf-generator
 cnf-generator/formulae/
 cnf-generator/bin/
 cnf-generator/build/
+
+# sat-solvers
+sat-solvers/sat-solvers/target
+
+# IDE
 .vscode
