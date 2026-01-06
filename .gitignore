@@ -4,8 +4,8 @@ cnf-generator/bin/
 cnf-generator/build/
 
 # sat-solvers
-sat-solvers\target
-sat-solvers\src\test
+sat-solvers/target
+sat-solvers/src/test
 
 # IDE
 .vscode

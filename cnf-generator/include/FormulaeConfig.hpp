@@ -10,7 +10,7 @@ namespace FormulaeConfig {
 /**
  * @brief Number of unique formulas to generate in total.
  */
-constexpr int NUM_UNIQUE_FORMULAS = 10;
+constexpr int NUM_UNIQUE_FORMULAS = 1000;
 
 /**
  * @brief Minimum number of literals per formula.
@@ -20,7 +20,7 @@ constexpr int MIN_LITERAL_PLACES = 1;
 /**
  * @brief Maximum number of literals per formula.
  */
-constexpr int MAX_LITERAL_PLACES = 10;
+constexpr int MAX_LITERAL_PLACES = 500;
 
 /**
  * @brief Probability (in percent) that a literal will be negated with a NOT ('-') operator.
