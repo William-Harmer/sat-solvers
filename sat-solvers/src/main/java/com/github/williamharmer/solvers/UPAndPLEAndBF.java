@@ -8,56 +8,64 @@ import com.github.williamharmer.cnfparser.CNFParser;
 import com.github.williamharmer.simplifications.PureLiteralElimination;
 import com.github.williamharmer.simplifications.UnitPropagation;
 
+// Combines two common SAT simplifications—Unit Propagation (UP) and
+// Pure Literal Elimination (PLE)—followed by a fallback Brute Force
+// search with early stopping. Returns a satisfying assignment if found,
+// or null if the formula is determined unsatisfiable.
 public class UPAndPLEAndBF {
 
+    // Runs UP, then PLE, then BruteForceEarlyStopping if needed.
+    // Input:
+    // - clauses: CNF as a list of clauses, each clause is a list of Character literals.
+    // Output:
+    // - HashMap<Character, Boolean> with a satisfying assignment if SAT,
+    //   or null if UNSAT is detected.
+    // Notes:
+    // - This method mutates the input clauses via simplification steps.
+    // - The returned map may include assignments derived from PLE plus
+    //   any additional assignments required by the brute-force step.
     public static HashMap<Character, Boolean> uPAndPLEAndBF(ArrayList<ArrayList<Character>> clauses) {
-        // Initialize literalTruthValues inside the method
+        // Accumulates assignments asserted by PLE and the final solver.
         HashMap<Character, Boolean> literalTruthValues = new HashMap<>();
 
-//        System.out.println("The 2D arraylist: " + clauses);
-
-        // Apply Unit Propagation
+        // Apply Unit Propagation to simplify using unit clauses.
         UnitPropagation.unitPropagation(clauses);
-//        System.out.println("The 2D arraylist after unit propagation: " + clauses);
 
-        // Apply Pure Literal Elimination
+        // Apply Pure Literal Elimination and record those assignments.
         PureLiteralElimination.pureLiteralElimination(clauses, literalTruthValues);
-//        System.out.println("The 2D arraylist after pure literal elimination: " + clauses);
 
-        // Early exit if the formula is already satisfiable or unsatisfiable
+        // If all clauses were satisfied during simplification, return what we have.
         if (clauses.isEmpty()) {
-//            System.out.println("SAT");
             return literalTruthValues;
         }
 
-        // Check if any clauses are empty (Unsatisfiable)
+        // If any clause is empty after simplification, the formula is contradictory (UNSAT).
         if (clauses.stream().anyMatch(ArrayList::isEmpty)) {
-//            System.out.println("Not SAT");
-            return null;  // Return null to indicate unsatisfiable
+            return null;
         }
 
-        // Solve using Brute Force if the formula is not immediately satisfiable or unsatisfiable
+        // Otherwise, defer to a bounded brute force search that stops at first solution.
         HashMap<Character, Boolean> satAssignment = BruteForce.bruteForceEarlyStopping(clauses);
-//        System.out.println("SAT Assignment after brute force: " + satAssignment);
 
-        // Merge results (combine the pure literal elimination with brute force solution)
+        // Merge any brute-force-found assignment into the accumulated ones from PLE.
         literalTruthValues.putAll(satAssignment);
-//        System.out.println("Combined Assignments: " + literalTruthValues);
 
-        return literalTruthValues;  // Return the final truth assignments
+        // Return the combined satisfying assignment.
+        return literalTruthValues;
     }
 
+    // Simple demo entry point to run the combined approach on a hard-coded formula.
     public static void main(String[] args) throws IOException {
         String formula = "(-o v -j) ^ (-f v l v l v t) ^ (-u) ^ (k) ^ (-q v n v -e v s) ^ (b v r) ^ (i) ^ (a v m) ^ (g v c) ^ (p) ^ (-d) ^ (w) ^ (h)";
         System.out.println("Formula: " + formula);
 
-        // Parse formula into clauses
+        // Parse the textual CNF into the 2D list representation expected by the solvers.
         ArrayList<ArrayList<Character>> clauses = CNFParser.formulaTo2DArrayList(formula);
 
-        // Call the function and store the result
+        // Run UP + PLE + BF pipeline.
         HashMap<Character, Boolean> literalTruthValues = uPAndPLEAndBF(clauses);
 
-        // Final output
+        // Report result.
         if (literalTruthValues != null) {
             System.out.println("Final Combined Assignments: " + literalTruthValues);
         } else {

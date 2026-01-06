@@ -5,67 +5,72 @@ import java.util.ArrayList;
 import com.github.williamharmer.cnfparser.CNFParser;
 import com.github.williamharmer.utilities.OppositePolarity;
 
+// Implements Unit Propagation for CNF formulas represented as a list of clauses,
+// where each clause is a list of Character literals. A unit clause forces its
+// literal to be true, which allows removing satisfied clauses and removing the
+// opposite literal from other clauses. Repeats until no changes occur.
 public class UnitPropagation {
 
+    // In-place unit propagation:
+    // - For each unit clause (single literal L):
+    //   * Remove any clause containing L (it is satisfied).
+    //   * From any clause containing ¬L, remove ¬L.
+    // - Iterate until a full pass makes no modifications.
     public static void unitPropagation(ArrayList<ArrayList<Character>> clauses) {
-        boolean formulaModified; // Track if the formula was modified
+        boolean formulaModified; // Tracks whether any change was made in the pass
 
         do {
-//            System.out.println(clauses);
-            formulaModified = false; // Reset flag at the start of each iteration
+            formulaModified = false;
 
-            for (int j = 0; j < clauses.size(); j++) { // For each clause
-                ArrayList<Character> clause = clauses.get(j); // Get the clause
+            // Iterate over clauses to find unit clauses
+            for (int j = 0; j < clauses.size(); j++) {
+                ArrayList<Character> clause = clauses.get(j);
 
-                if (clause.size() == 1) { // Check if it is a unit clause
-                    char unitClauseElement = clause.getFirst(); // Get the unit clause element
-//                    System.out.println("UNIT CLAUSE FOUND: " + unitClauseElement);
+                if (clause.size() == 1) { // Found a unit clause
+                    char unitClauseElement = clause.getFirst();
 
-                    for (int i = 0; i < clauses.size(); i++) { // For each clause
-                        if (i == j) continue; // Apart from its own
+                    // Apply the unit literal to all other clauses
+                    for (int i = 0; i < clauses.size(); i++) {
+                        if (i == j) continue; // Skip the unit clause itself
 
-                        if (clauses.get(i).contains(unitClauseElement)) { // If clause contains the unit clause element
-//                            System.out.println("Clause " + i + " contains the unit element " + unitClauseElement);
-                            clauses.remove(i); // Remove the whole clause
-                            i--; // Adjust index
-                            j--; // Adjust j due to removal
-                            formulaModified = true; // Record modification
-//                            System.out.println("Removed clause " + i + ", new clauses: " + clauses);
+                        if (clauses.get(i).contains(unitClauseElement)) {
+                            // Clause satisfied by the unit literal: remove it
+                            clauses.remove(i);
+                            i--; // Adjust index after removal
+                            j--; // Adjust j because the list shrank before it
+                            formulaModified = true;
 
                         } else if (clauses.get(i).contains(OppositePolarity.oppositePolarity(unitClauseElement))) {
-                            // If negated version is found
-
-                            // What about if a clause has duplicates??????
-
+                            // Clause contains the opposite literal: remove that literal
                             clauses.get(i).remove((Character) OppositePolarity.oppositePolarity(unitClauseElement));
-                            formulaModified = true; // Record modification
-//                            System.out.println("Clause " + i + " has " + Utility.negate(unitClauseElement));
-//                            System.out.println("New formula: " + clauses);
+                            formulaModified = true;
                         }
                     }
 
+                    // If we modified the formula, restart scanning for unit clauses
                     if (formulaModified) {
-//                        System.out.println("Formula modified, restarting processing unit clauses");
-                        break; // Restart processing all unit clauses
+                        break;
                     }
                 }
             }
-        } while (formulaModified); // Continue until no modification occurs
+        } while (formulaModified); // Continue until a pass makes no changes
     }
 
+    // Simple driver to demonstrate unit propagation on a small formula.
     public static void main(String[] args) {
 
         String formula = "(a c) (a b)";
+        // Example format supports multiple clauses like:
         // (A B) (A c) (C D) (b d e) (E f G) (b g h) (H I) (H j) (i J k) (J L) (K l)
         ArrayList<ArrayList<Character>> clauses = CNFParser.formulaTo2DArrayList(formula);
 
-        // Print the array
+        // Before propagation
         System.out.println(clauses);
 
-        // Now apply unit propagation to formula
+        // Apply unit propagation
         unitPropagation(clauses);
 
-        // Print the array
+        // After propagation
         System.out.println(clauses);
     }
 

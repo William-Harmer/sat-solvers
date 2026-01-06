@@ -2,47 +2,60 @@ package com.github.williamharmer.cnfparser;
 
 import java.util.ArrayList;
 
+// Parses a simple CNF string format into a 2D ArrayList representation.
+// Representation:
+// - The result is a list of clauses; each clause is a list of Character literals.
+// - Lowercase character => positive literal (e.g., 'a').
+// - A preceding '-' indicates negation; the literal is stored uppercase (e.g., "-a" -> 'A').
+// Input format expectations:
+// - Clauses are enclosed in parentheses: (a b c) or (a v b v C).
+// - Inside a clause, 'v' acts as a disjunction separator and is ignored.
+// - Whitespace is ignored entirely.
+// - Clauses can be concatenated: (abC)(-d v e)(f).
 public class CNFParser {
     public static ArrayList<ArrayList<Character>> formulaTo2DArrayList(String formula) {
-        // Strip all whitespace from the formula
+        // Remove all whitespace for simpler character-by-character parsing.
         formula = formula.replaceAll("\\s", "");
 
-        // Create the 2D ArrayList to store clauses
+        // Output structure: list of clauses, each clause is a list of literals.
         ArrayList<ArrayList<Character>> clauses = new ArrayList<>();
 
-        // Temporary list for the current clause (row)
+        // Holds literals for the clause currently being parsed; null when not inside parentheses.
         ArrayList<Character> newRow = null;
 
-        // Iterate through the formula characters
+        // Walk the string and build clauses.
         for (int i = 0; i < formula.length(); i++) {
             char currentChar = formula.charAt(i);
 
             if (currentChar == '(') {
-                // Start a new clause, create a new row
+                // Begin a new clause.
                 newRow = new ArrayList<>();
             } else if (currentChar == ')') {
-                // End the current clause, add the row to the 2D ArrayList
+                // End current clause: if we were building one, add it to the output.
                 if (newRow != null) {
                     clauses.add(newRow);
-                    newRow = null; // Reset for the next clause
+                    newRow = null; // Reset for next clause.
                 }
             } else if (newRow != null) {
                 if (currentChar == '-') {
-                    // If a '-' is found, check the next character
+                    // Negation marker: consume the next character as the negated literal.
                     if (i + 1 < formula.length()) {
                         char nextChar = formula.charAt(i + 1);
                         if (nextChar != 'v') {
-                            newRow.add(Character.toUpperCase(nextChar)); // Add the next character as uppercase
-                            i++; // Skip the next character since it's already processed
+                            // Store negated literal as uppercase to encode polarity.
+                            newRow.add(Character.toUpperCase(nextChar));
+                            i++; // Skip the next character; we've processed it.
                         }
                     }
                 } else if (currentChar != 'v') {
-                    // Add any other character (except 'v') to the current clause
+                    // Regular literal (positive) or any non-separator character: add to clause.
                     newRow.add(currentChar);
                 }
+                // If currentChar == 'v', it's a separator; skip it.
             }
         }
 
-        return clauses; // Return the 2D ArrayList
+        // Return parsed CNF as list of clauses.
+        return clauses;
     }   
 }

@@ -10,112 +10,70 @@ import java.util.TreeSet;
 import com.github.williamharmer.cnfparser.CNFParserCDCL;
 import com.github.williamharmer.utilities.OppositePolarity;
 
+// Conflict-Driven Clause Learning (CDCL) solver.
+// Maintains a stack of formulas at decision levels, performs unit propagation,
+// detects conflicts, learns a clause, backtracks to an appropriate level,
+// and continues until SAT or UNSAT is determined.
 public class CDCL {
 
-
+    // Entry point for the CDCL procedure.
+    // Returns a satisfying assignment as a map (variable -> value) if SAT,
+    // or an empty map if UNSAT is proven at level 0.
     public static HashMap<Character, Boolean> cDCL(ArrayList<CDCLClause> formula){
-        // Create a stack that holds the formula at each decision level
+        // Stack holds snapshots of the formula at each decision level for backtracking.
         Stack<ArrayList<CDCLClause>> formulaStack = new Stack<>();
         int decisionLevel = 0;
-//        System.out.println("The formula as it is being added in the stack:");
-//        print(formula);
-//        System.out.println();
+
+        // Initialize stack with a deep copy of the starting formula.
         ArrayList<CDCLClause> copiedFormula2 = deepCopyFormula(formula);
         formulaStack.push(copiedFormula2);
 
         outerLoop: while(true){
-            // Unit prop the formula
+            // Propagate implications from current unit clauses at this level.
             cDCLUnitProp(formula,decisionLevel);
 
-//            System.out.println("The formula after unit prop:");
-//            print(formula);
-
-            // Check for sat / unsat
+            // Check for SAT/UNSAT and prepare for decisions or conflict handling.
             boolean allUnitClauses = true;
             for (CDCLClause clause : formula) {
                 if (clause.clause.size() != 1) {
                     allUnitClauses = false;
                 }
                 if (clause.clause.isEmpty()) {
+                    // Conflict found
                     if (decisionLevel == 0) {
-//                        System.out.println("UNSAT");
-                        // return an empty hashmap
+                        // At level 0, a conflict implies UNSAT.
                         return new HashMap<>();
                     } else {
-//                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//                        System.out.println("Going to have to learn a new clause");
-
-                        // Get the learned clause
+                        // Learn a new clause from the conflict and backtrack.
                         CDCLClause learnedClause = getLearnedClause(formula, clause, decisionLevel);
 
-//                        System.out.println("The learned clause is ");
-//                        learnedClause.print();
-//                        System.out.println();
-
-//                        System.out.println("Going to now backtrack the stack ");
-//                        System.out.println("--------------------------");
-//                        System.out.println("Before Stack:");
-//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-//                            print(stackItem);
-//                        }
-//                        System.out.println("--------------------------");
-
-                        // Backtrack to that learned clauses formula on the stack
+                        // Backtrack the stack to the learned clause's target level.
                         while(formulaStack.size() > learnedClause.level+1){
                             formulaStack.pop();
                         }
 
-//                        System.out.println("--------------------------");
-//                        System.out.println("After Stack:");
-//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-//                            print(stackItem);
-//                        }
-//                        System.out.println("--------------------------");
-//
-//                        System.out.println("Get the top item from the stack, set that as the formula and pop it");
-
-                        // Now get the top item and set that as the formula
+                        // Restore formula from the stack snapshot at that level.
                         formula = formulaStack.pop();
-//                        print(formula);
 
-//                        System.out.println("--------------------------");
-//                        System.out.println("Stack after formula is taken and popped");
-//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-//                            print(stackItem);
-//                        }
-//                        System.out.println("--------------------------");
-//
-//                        System.out.println("Add learned clause onto end");
-                        // Add the learned clause to the end
+                        // Add the learned clause to the formula.
                         formula.add(learnedClause);
-//                        print(formula);
 
-//                        System.out.println("Put back onto stack with the new learned clause");
-                        // Add that back onto the stack
+                        // Push updated formula back to the stack.
                         formulaStack.push(deepCopyFormula(formula));
-//                        System.out.println("--------------------------");
-//                        System.out.println("Stack after added back on with learned clause");
-//                        for (ArrayList<CDCLClause> stackItem : formulaStack) {
-//                            print(stackItem);
-//                        }
-//                        System.out.println("--------------------------");
-                        // Change the decision level
-                        decisionLevel = learnedClause.level; // Decision level meant to be learnedClause.level+1??????
-//                        System.out.println("Decision level is now "+ decisionLevel);
-//                        System.out.println("End of learning!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-//                        System.out.println("iteration++");
-//                        System.out.println();
 
-                        // Go through the while loop again
+                        // Set current decision level to the learned backtrack level.
+                        decisionLevel = learnedClause.level;
+
+                        // Restart the outer loop at the new level.
                         continue outerLoop;
                     }
                 }
             }
 
+            // If all clauses are unit, we can read off a model from them (SAT).
             if (allUnitClauses) {
-//                System.out.println("SAT");
                 HashMap<Character, Boolean> answer = new HashMap<>();
-                for(CDCLClause clause : formula){ // for each clause in the formula
+                for(CDCLClause clause : formula){
                     if (Character.isLowerCase(clause.clause.getFirst())) {
                         answer.put(clause.clause.getFirst(),true);
                     } else {
@@ -125,72 +83,44 @@ public class CDCL {
                 return answer;
             }
 
-
-//            System.out.println("No conflict, decision being made");
-//            System.out.println("Formula before decision");
-//            print(formula);
-
-            // If neither then add the clause to the stack and make a decision
-
+            // No conflict and not all unit: make a decision.
             if (decisionLevel != 0){
                 ArrayList<CDCLClause> copiedFormula = deepCopyFormula(formula);
                 formulaStack.push(copiedFormula);
             } else {
-                // Replace the top item in the stack
+                // Replace the base snapshot when at level 0.
                 formulaStack.set(formulaStack.size() - 1, deepCopyFormula(formula));
             }
 
-
+            // Increase decision level and assert a new decision literal as a unit clause.
             decisionLevel++;
             addFirstElementNotAUnitClauseAsNewClauseToFormula(formula,decisionLevel,false);
-
-            // Print out the stack for debugging
-//            System.out.println("--------------------------");
-//            System.out.println("Current Stack:");
-//            for (ArrayList<CDCLClause> stackItem : formulaStack) {
-//                print(stackItem);
-//            }
-//            System.out.println("--------------------------");
-
-
-//            System.out.println("Formula after decision");
-//            print(formula);
-//            System.out.println("Iteration ++ with decision level now set as: " + decisionLevel);
-//            System.out.println();
-
         }
     }
 
+    // Deep copy the formula (list of CDCLClause) using the copy constructor.
     private static ArrayList<CDCLClause> deepCopyFormula(ArrayList<CDCLClause> formula) {
         ArrayList<CDCLClause> copiedFormula = new ArrayList<>();
         for (CDCLClause clause : formula) {
-            copiedFormula.add(new CDCLClause(clause)); // Use the copy constructor
+            copiedFormula.add(new CDCLClause(clause));
         }
         return copiedFormula;
     }
 
-
-
+    // Find the first Unique Implication Point (UIP) for the given conflict at a decision level.
+    // Traverses unit implications backwards using trail information to identify the UIP.
     private static Character findFirstUIP(ArrayList<CDCLClause> formula, CDCLClause emptyClause, int decisionLevel){
-//        System.out.println("Decision level: " + decisionLevel);
-        // Will this go all the way back to the decision or will it give me an error in that case?
-
-        // We have the empty clause already
-        // put all the characters from emptyClause.trailElements into the tree set
-        // Add each literal from trailElements into the TreeSet
+        // Track frontier of implication literals; TreeSet orders by variable identity (case-insensitive).
         TreeSet<Character> set = new TreeSet<>(Comparator.comparingInt(Character::toLowerCase));
         set.addAll(emptyClause.trailElements);
-//        System.out.println("Finding UIP:");
-//        System.out.println("Starting set : "+ set);
 
+        // Reduce the frontier until only one literal remains at the current level (the UIP).
         while (set.size() > 1){
             for (CDCLClause clause : formula) {
-                if (clause.clause.size() == 1 && (clause.clause.contains(Character.toLowerCase(set.last())) || clause.clause.contains(Character.toUpperCase(set.last()))) && clause.level == decisionLevel) { // Check if the clause is a unit clause, contains the last element, and has the same decision level
-//                    System.out.println(set.last() + " connected to...");
+                // Follow implication edges from unit clauses at the same decision level.
+                if (clause.clause.size() == 1 && (clause.clause.contains(Character.toLowerCase(set.last())) || clause.clause.contains(Character.toUpperCase(set.last()))) && clause.level == decisionLevel) {
                     set.remove(set.last());
-//                    System.out.println(clause.trailElements);
-                    set.addAll(clause.trailElements); // Add all the letters in trailElements to the set
-//                    System.out.println(set);
+                    set.addAll(clause.trailElements);
                     break;
                 }
             }
@@ -198,102 +128,70 @@ public class CDCL {
         return set.last();
     }
 
+    // Derive a learned clause from a conflict by analyzing the implication graph
+    // and computing a backtrack level. Returns the learned clause with its target level.
     private static CDCLClause getLearnedClause(ArrayList<CDCLClause> formula, CDCLClause emptyClause, int decisionLevel) {
-        // Find the first UIP (Unique Implication Point)
+        // Identify the first UIP for this conflict.
         Character firstUIP = findFirstUIP(formula, emptyClause, decisionLevel);
-//        System.out.println("First UIP: " + firstUIP);
-//
-//        System.out.println("The formula after finding the first UIP (Should not change):");
-//        print(formula);
 
-        // Find the earliest decision node (lowest decision level > 0)
+        // Find the earliest decision node (lowest level > 0) among unit decision clauses.
         CDCLClause startNode = null;
         for (CDCLClause clause : formula) {
             if (clause.clause.size() == 1 && clause.trailElements.isEmpty()) {
-                // Set startNode to the clause with the smallest decision level
                 if (startNode == null || clause.level < startNode.level) {
                     startNode = clause;
                 }
             }
         }
-//        System.out.println();
-//        System.out.println("Start node is: ");
-//        startNode.print();
-//        System.out.println();
 
-//        System.out.println("Earliest decision node:");
-//        startNode.print();
-//        System.out.println();
-
-        // Use TreeSet to maintain an ordered set of literals
+        // Ordered set to process literals deterministically by variable identity.
         TreeSet<Character> set = new TreeSet<>(Comparator.comparingInt(Character::toLowerCase));
-
-        // Use HashSet to store learned clause literals while ensuring uniqueness
+        // Learned clause literal set (unique).
         HashSet<Character> learnedSet = new HashSet<>();
 
-//        System.out.println();
-//        System.out.println("Now we are getting the learned clause: ");
-
-        // Add the first literal of the startNode to the set
+        // Seed with the decision literal from the earliest decision node.
         set.add(startNode.clause.getFirst());
-//        System.out.println("Set start: ");
-//        System.out.println(set);
 
+        // Traverse forward until we cross beyond the UIP in ordering.
         whileLoop:
-            while (Character.toLowerCase(set.first()) <= Character.toLowerCase(firstUIP)) {
-//                System.out.println("All elements in the set are not greater than the UIP SO we must go forward");
-                char smallest = set.first(); // Get the smallest element (ignoring case)
+        while (Character.toLowerCase(set.first()) <= Character.toLowerCase(firstUIP)) {
+            char smallest = set.first();
 
+            for (CDCLClause clause : formula) {
 
-                // Iterate through all formula
-                for (CDCLClause clause : formula) {
+                // If this clause was implied using the current literal, extend the frontier.
+                if (clause.clause.size() == 1 &&
+                        (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))) {
 
-                    // Check if the clause is a unit clause and contains the smallest element
-                    if (clause.clause.size() == 1 &&
-                            (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))) {
-//                        System.out.println("Found a clause that contains element " + smallest);
+                    char unitLiteral = clause.clause.getFirst();
 
-                        char unitLiteral = clause.clause.getFirst(); // Get the only literal in the unit clause
-
-                        // If the unit literal is greater than the UIP (ignoring case)
-                        if (Character.toLowerCase(unitLiteral) > Character.toLowerCase(firstUIP)) {
-                            learnedSet.add(OppositePolarity.oppositePolarity(smallest)); // Add opposite polarity to HashSet (no duplicates)
-                        }
-
-                        // Add unitLiteral to the processing set
-                        set.add(unitLiteral);
-                    } else if (clause.clause.isEmpty() &&
-                            (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))){ // Start node is directly hitting the conflict
-//                        System.out.println("Start node is directly hitting conflict");
-
+                    // If the implication is beyond the UIP, we add the opposite polarity to the learned set.
+                    if (Character.toLowerCase(unitLiteral) > Character.toLowerCase(firstUIP)) {
                         learnedSet.add(OppositePolarity.oppositePolarity(smallest));
-
-                        // Somehow break out of the while loop
-                        break whileLoop;
-
                     }
-                }
 
-                // Remove the smallest element from the set after processing
-                set.remove(smallest);
-    //            System.out.println("Current set: " + set);
+                    set.add(unitLiteral);
+                } else if (clause.clause.isEmpty() &&
+                        (clause.trailElements.contains(Character.toLowerCase(smallest)) || clause.trailElements.contains(Character.toUpperCase(smallest)))){
+                    // Direct conflict reached; add opposing literal and stop.
+                    learnedSet.add(OppositePolarity.oppositePolarity(smallest));
+                    break whileLoop;
+                }
             }
 
-        // Convert HashSet to ArrayList for the learned clause
+            // Remove processed literal from the frontier.
+            set.remove(smallest);
+        }
+
+        // Build the learned clause from the collected literals.
         ArrayList<Character> learnedClause = new ArrayList<>(learnedSet);
-//        System.out.println("Learned clause: " + learnedClause);
 
-        // Determine the backtracking level (lowest decision level in learned clause)
-        int level = -1; // Initialize level to -1 (unset)
-
-        // Iterate over literals in the learned clause to determine the lowest decision level
-        // This can be optimised and included in the for loop above??
+        // Compute a backtrack level based on the minimum decision level of involved unit clauses.
+        int level = -1;
         for (Character literal : learnedClause) {
             for (CDCLClause clause : formula) {
-                // Check if the clause contains the literal (or its opposite polarity)
                 if (clause.clause.size() == 1 &&
                         (clause.clause.contains(literal) || clause.clause.contains(OppositePolarity.oppositePolarity(literal)))) {
-                    // Update the level to the lowest encountered level
                     if (level == -1 || clause.level < level) {
                         level = clause.level;
                     }
@@ -301,83 +199,77 @@ public class CDCL {
             }
         }
 
-        // Return the new learned clause with its computed decision level
+        // Ensure non-negative decision level. Return the learned clause with computed level.
         return new CDCLClause(learnedClause, new ArrayList<>(), Math.max(0, level - 1));
     }
 
-
-
+    // Make a decision by taking the first literal of the first non-unit clause
+    // and asserting it (or its opposite) as a new unit clause at the current level.
     private static void addFirstElementNotAUnitClauseAsNewClauseToFormula(
             ArrayList<CDCLClause> clauses, int decisionLevel, boolean useOppositePolarity) {
 
         for (CDCLClause cdclClause : clauses) {
-            // Check if the clause is not a unit clause
             if (cdclClause.clause.size() > 1) {
-                char firstLiteral = cdclClause.clause.getFirst(); // Get the first literal
+                char firstLiteral = cdclClause.clause.getFirst();
 
-                // If useOppositePolarity is true, apply the opposite polarity to the first literal
                 if (useOppositePolarity) {
                     firstLiteral = OppositePolarity.oppositePolarity(firstLiteral);
                 }
 
-                // Create the new clause with the modified first literal
                 ArrayList<Character> newClause = new ArrayList<>();
-                newClause.add(firstLiteral);  // No need for useCaps anymore
+                newClause.add(firstLiteral);
 
-                // Create a new CDCLClause object with the updated clause and current decision level
-                // Leave trailElements empty and set the decisionLevel
                 CDCLClause newCDCLClause = new CDCLClause(newClause, new ArrayList<>(), decisionLevel);
-
-                // Add the new CDCLClause to the clauses list
                 clauses.add(newCDCLClause);
-
-                // Return the updated clauses
                 return;
             }
         }
     }
 
+    // Unit propagation for the CDCL representation.
+    // - Removes clauses satisfied by a unit literal.
+    // - Removes opposite literals from clauses, recording them in trailElements.
+    // - Sets the decision level on modified clauses.
     private static void cDCLUnitProp(ArrayList<CDCLClause> clauses, int decisionLevel) {
         boolean formulaModified = true;
 
-        // Keep processing until no more modifications are made
+        // Repeat until no further simplification occurs.
         while (formulaModified) {
-//            print(clauses);
             formulaModified = false;
 
-            // Iterate through the clauses
             for (int j = 0; j < clauses.size(); j++) {
                 CDCLClause currentClause = clauses.get(j);
 
-                // Check if the clause is a unit clause (only one literal)
+                // Only process unit clauses as sources of implications.
                 if (currentClause.clause.size() == 1) {
                     char unitClause = currentClause.clause.getFirst();
 
-                    // Iterate through clauses again to handle the unit clause
+                    // Scan all other clauses and apply the unit literal.
                     for (int i = 0; i < clauses.size(); i++) {
                         CDCLClause clauseToCheck = clauses.get(i);
 
-                        // Skip the current clause (j-th clause)
                         if (clauseToCheck == currentClause) continue;
 
                         boolean containsUnit = clauseToCheck.clause.contains(unitClause);
                         boolean containsOpposite = clauseToCheck.clause.contains(OppositePolarity.oppositePolarity(unitClause));
 
-                        if (containsUnit) { // Clause contains the same polarity unit clause
-                            clauses.remove(i); // Remove the clause altogether
-                            i--; // Adjust index to account for removal
+                        if (containsUnit) {
+                            // Clause satisfied: remove it from the formula.
+                            clauses.remove(i);
+                            i--;
                             if (i < j) {
                                 j--;
-                            } // Adjust to revisit the current clause
+                            }
                             formulaModified = true;
 
-                        } else if (containsOpposite) { // Clause contains the opposite polarity unit clause
+                        } else if (containsOpposite) {
+                            // Remove opposite literals and record them in the trail.
                             while (clauseToCheck.clause.contains(OppositePolarity.oppositePolarity(unitClause))) {
-                                // Move opposite unit to trailElements
                                 clauseToCheck.trailElements.add(OppositePolarity.oppositePolarity(unitClause));
                                 clauseToCheck.clause.remove((Character) OppositePolarity.oppositePolarity(unitClause));
                             }
-                            clauseToCheck.level = decisionLevel; // Set decision level for the clause
+                            // Mark the level at which this clause was affected.
+                            clauseToCheck.level = decisionLevel;
                             formulaModified = true;
                         }
                     }
@@ -386,6 +278,7 @@ public class CDCL {
         }
     }
 
+    // Utility to print the current formula state.
     public static void print(ArrayList<CDCLClause> clauses) {
         for (CDCLClause clause : clauses) {
             clause.print();
@@ -394,6 +287,7 @@ public class CDCL {
         System.out.println();
     }
 
+    // Simple driver for testing the CDCL pipeline with a string parser to CDCL clauses.
     public static void main(String[] args) {
         String formula = "(abc)(abC)(Bd)(aBD)(Aef)(AeF)(EF)(AEf)";
         ArrayList<CDCLClause> CDCLClauses = CNFParserCDCL.formulaToCDCLArrayList(formula);
