@@ -1,4 +1,4 @@
-# SAT Solvers
+# A Comparative Analysis of SAT Solvers
 This repository contains the code and analysis developed for my undergraduate dissertation, which explores the design, implementation, and evaluation of various SAT solvers. The project begins with basic solver implementations, starting from a brute-force approach and progressing towards more sophisticated and efficient algorithms, with the best-performing model based on the CDCL (Conflict-Driven Clause Learning) technique.
 
 All solvers in this project are designed to handle Boolean formulae expressed in CNF (Conjunctive Normal Form). To support benchmarking, I created a CNF generator that produces a range of test formulae. These are used to compare solver implementations in terms of runtime performance and memory usage, providing insights into how different algorithms scale and optimise under varying problem complexities.
